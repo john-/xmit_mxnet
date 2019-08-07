@@ -17,7 +17,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# code borrows exensively from at least the following:
+# code borrows extensively from at least the following:
 
 # https://github.com/apache/incubator-mxnet/blob/master/perl-package/AI-MXNet/examples/gluon/mnist.pl
 # http://blogs.perl.org/users/sergey_kolychev/2017/10/machine-learning-in-perl-part3-deep-convolutional-generative-adversarial-network.html
@@ -35,34 +35,43 @@ use Data::Dumper;
 use feature 'say';
 
 GetOptions(
-    'lr=f'           => \(my $lr           = 0.001),
-    'log-interval=i' => \(my $log_interval = 20 ),
-    'momentum=f'     => \(my $momentum     = 0.9),
-    'hybridize=i'    => \(my $hybridize    = 0  ),
-    'cuda=i'         => \(my $cuda         = 0  ),
-    'load_params=i'  => \(my $load_params  = 0  ),
-    'batch-size=i'   => \(my $batch_size   = 1  ),
-    'epochs=i'       => \(my $epochs       = 10 ),
-    'debug=i'        => \(my $debug        = 0  ),
-    'help'           => sub { HelpMessage(0) },
+    'lr=f'           => \( my $lr           = 0.001 ),
+    'log-interval=i' => \( my $log_interval = 20 ),
+    'momentum=f'     => \( my $momentum     = 0.9 ),
+    'hybridize=i'    => \( my $hybridize    = 0 ),
+    'cuda=i'         => \( my $cuda         = 0 ),
+    'load_params=i'  => \( my $load_params  = 0 ),
+    'batch-size=i'   => \( my $batch_size   = 1 ),
+    'epochs=i'       => \( my $epochs       = 10 ),
+    'debug=i'        => \( my $debug        = 0 ),
+    'help' => sub { HelpMessage(0) },
 ) or HelpMessage(1);
 
 my $ctx = $cuda ? mx->gpu(0) : mx->cpu;
 
-
 # define network
 
 my $net = nn->Sequential();
-$net->name_scope(sub {
-    $net->add(nn->Conv2D( channels=>6, kernel_size=>5, activation=>'relu'));
-    $net->add(nn->MaxPool2D( pool_size=>2, strides=>2));
-    $net->add(nn->Conv2D( channels=>16, kernel_size=>3, activation=>'relu'));
-    $net->add(nn->MaxPool2D( pool_size=>2, strides=>2));
-    $net->add(nn->Flatten());
-    $net->add(nn->Dense(120, activation=>"relu"));
-    $net->add(nn->Dense(84, activation=>"relu"));
-    $net->add(nn->Dense(2));
-});
+$net->name_scope(
+    sub {
+        $net->add(
+            nn->Conv2D( channels => 6, kernel_size => 5, activation => 'relu' )
+        );
+        $net->add( nn->MaxPool2D( pool_size => 2, strides => 2 ) );
+        $net->add(
+            nn->Conv2D(
+                channels    => 16,
+                kernel_size => 3,
+                activation  => 'relu'
+            )
+        );
+        $net->add( nn->MaxPool2D( pool_size => 2, strides => 2 ) );
+        $net->add( nn->Flatten() );
+        $net->add( nn->Dense( 120, activation => "relu" ) );
+        $net->add( nn->Dense( 84,  activation => "relu" ) );
+        $net->add( nn->Dense(2) );
+    }
+);
 
 #$net->name_scope(sub {
 #    $net->add(nn->Dense(128, activation=>'relu'));
@@ -75,28 +84,37 @@ $net->load_parameters('xmit.params') if $load_params;
 
 # data
 
-sub transformer
-{
-    my ($data, $label) = @_;
+sub transformer {
+    my ( $data, $label ) = @_;
 
     # put channel first
-    $data = $data->transpose([2,0,1]);  # change to channel, height, width
-    #print Dumper($data->shape);
-    $data = $data->astype('float32')/255.0;
+    $data = $data->transpose( [ 2, 0, 1 ] );  # change to channel, height, width
+    $data = $data->astype('float32') / 255.0;
 
-    return ($data, $label);
+    return ( $data, $label );
 }
 
-my $train_dataset = gluon->data->vision->ImageFolderDataset(root => './training/train', flag => 1, transform => \&transformer);
+my $train_dataset = gluon->data->vision->ImageFolderDataset(
+    root      => './training/train',
+    flag      => 1,
+    transform => \&transformer
+);
 my $train_data = gluon->data->DataLoader(
     $train_dataset,
-    batch_size=>$batch_size, shuffle=>1, last_batch=>'discard'
+    batch_size => $batch_size,
+    shuffle    => 1,
+    last_batch => 'discard'
 );
 
-my $val_dataset = gluon->data->vision->ImageFolderDataset(root => './training/test', flag => 1, transform => \&transformer);
+my $val_dataset = gluon->data->vision->ImageFolderDataset(
+    root      => './training/test',
+    flag      => 1,
+    transform => \&transformer
+);
 my $val_data = gluon->data->DataLoader(
     $val_dataset,
-    batch_size=>$batch_size, shuffle=>0
+    batch_size => $batch_size,
+    shuffle    => 0
 );
 
 &train_info if $debug;
@@ -104,59 +122,71 @@ my $val_data = gluon->data->DataLoader(
 sub train_info {
 
     my $sample = $train_data->[0];
-    my $data = $sample->[0];
-    my $label = $sample->[1];
-    say sprintf('data type: %s label type: %s', $data->dtype, $label->dtype);
-    say Dumper($data->at(0)->shape);
+    my $data   = $sample->[0];
+    my $label  = $sample->[1];
+    say sprintf( 'data type: %s label type: %s', $data->dtype, $label->dtype );
+    say Dumper( $data->at(0)->shape );
+
     #say Dumper($train_dataset->items);
-    say sprintf('sample image name: %s, label: %s', $train_dataset->items->[0][0],$train_dataset->items->[0][1]);
-    say sprintf('batch size: %s', $data->len);
+    say sprintf(
+        'sample image name: %s, label: %s',
+        $train_dataset->items->[0][0],
+        $train_dataset->items->[0][1]
+    );
+    say sprintf( 'batch size: %s', $data->len );
     say 'labels:';
-    foreach my $label (@{$train_dataset->synsets}) {
-        say sprintf('label: %s', $label);
+    foreach my $label ( @{ $train_dataset->synsets } ) {
+        say sprintf( 'label: %s', $label );
     }
-    say sprintf('total training data: %d', $train_dataset->len);
-    say sprintf('total validation data: %d', $val_dataset->len);
+    say sprintf( 'total training data: %d',   $train_dataset->len );
+    say sprintf( 'total validation data: %d', $val_dataset->len );
+
     #print Dumper($train_data->[0][0]->dtype);
     #print Dumper($train_data);
 
     #dump_all_images($train_data);
 }
 
-sub dump_all_images
-{
+sub dump_all_images {
     my $set = shift;
 
     my @tendl = @$set;
     mkdir "image_dump";
-    for my $i (0..$#tendl) {
-	my $data = ${$tendl[$i]}[0];
-	my $label = ${$tendl[$i]}[1];
+    for my $i ( 0 .. $#tendl ) {
+        my $data  = ${ $tendl[$i] }[0];
+        my $label = ${ $tendl[$i] }[1];
 
-	#say Dumper($data->shape);
-	my $image = ((pdl_shuffle($data->at(0)->at(0)->aspdl,
-			      [reverse(0..49)]) + 1)*255)->byte;
+        #say Dumper($data->shape);
+        my $image = (
+            (
+                pdl_shuffle( $data->at(0)->at(0)->aspdl,
+                    [ reverse( 0 .. 49 ) ] ) + 1
+            ) * 255
+        )->byte;
 
-	#say $d->shape;
-	$image->wpic("image_dump/$i.png");
-    };
+        #say $d->shape;
+        $image->wpic("image_dump/$i.png");
+    }
 }
 
-
-sub visualize
-{
-    my ($data, $iter) = @_;
+sub visualize {
+    my ( $data, $iter ) = @_;
     mkdir "data_images";
     mkdir "data_images/$iter";
-    #say Dumper($data->shape);
-    for my $i (0..$batch_size-1)
-    {
-	#say Dumper($data->at($i)->at(0)->aspdl);
-	my $d = ((pdl_shuffle($data->at($i)->at(0)->aspdl,
-			      [reverse(0..49)]) + 1)*255)->byte;
 
-	#say $d->shape;
-	$d->wpic("data_images/$iter/$i.png");
+    #say Dumper($data->shape);
+    for my $i ( 0 .. $batch_size - 1 ) {
+
+        #say Dumper($data->at($i)->at(0)->aspdl);
+        my $d = (
+            (
+                pdl_shuffle( $data->at($i)->at(0)->aspdl,
+                    [ reverse( 0 .. 49 ) ] ) + 1
+            ) * 255
+        )->byte;
+
+        #say $d->shape;
+        $d->wpic("data_images/$iter/$i.png");
     }
 }
 
@@ -165,98 +195,107 @@ sub get_mislabeled {
 
     my @tendl = @$loader;
 
-    my @text_labels = ('data', 'voice');
+    my @text_labels = ( 'data', 'voice' );
 
     my $topline;
-    $topline .= '  PREDICTION :: CORRECT'."\n";
-    $topline .= '  ========== :: ======='."\n";
+    $topline .= '  PREDICTION :: CORRECT' . "\n";
+    $topline .= '  ========== :: =======' . "\n";
 
     print $topline;
 
-    for my $i (0..$#tendl) {
-	my $data = ${$tendl[$i]}[0];
-	my $label = ${$tendl[$i]}[1];
+    for my $i ( 0 .. $#tendl ) {
+        my $data  = ${ $tendl[$i] }[0];
+        my $label = ${ $tendl[$i] }[1];
 
-	my $ot = $net->($data)->argmax({axis=>1});
-	my $pred = $text_labels[ PDL::sclr( $ot->aspdl )];
-	my $true = $text_labels[ PDL::sclr( $label->aspdl )];
+        my $ot   = $net->($data)->argmax( { axis => 1 } );
+        my $pred = $text_labels[ PDL::sclr( $ot->aspdl ) ];
+        my $true = $text_labels[ PDL::sclr( $label->aspdl ) ];
 
-	my $otline;
-	$otline .= sprintf("%12s",$pred) ." :: ";
-	$otline .= sprintf("%-10s",$true)." ";
-	$otline .= ( $pred eq $true ) ? ".." : "XX";
+        my $otline;
+        $otline .= sprintf( "%12s",  $pred ) . " :: ";
+        $otline .= sprintf( "%-10s", $true ) . " ";
+        $otline .= ( $pred eq $true ) ? ".." : "XX";
 
-	print $otline ."\n";
+        print $otline . "\n";
 
     }
 }
 
-sub test
-{
-    my $ctx = shift;
+sub test {
+    my $ctx    = shift;
     my $metric = mx->metric->Accuracy();
-    while(defined(my $d = <$val_data>))
-    {
-        my ($data, $label) = @$d;
-        $data = $data->as_in_context($ctx);
+    while ( defined( my $d = <$val_data> ) ) {
+        my ( $data, $label ) = @$d;
+        $data  = $data->as_in_context($ctx);
         $label = $label->as_in_context($ctx);
         my $output = $net->($data);
-        $metric->update([$label], [$output]);
+        $metric->update( [$label], [$output] );
     }
     return $metric->get;
 }
 
-sub train
-{
-    my ($epochs, $ctx) = @_;
-    # Collect all parameters from net and its children, then initialize them.
-    $net->initialize(mx->init->Xavier(magnitude=>2.24), ctx=>$ctx);
-    # Trainer is for updating parameters with gradient.
-    my $trainer = gluon->Trainer($net->collect_params(), 'sgd', { learning_rate => $lr, momentum => $momentum });
-    my $metric = mx->metric->Accuracy();
-    my $loss = gluon->loss->SoftmaxCrossEntropyLoss();
+sub train {
+    my ( $epochs, $ctx ) = @_;
 
-    for my $epoch (0..$epochs-1)
-    {
+    # Collect all parameters from net and its children, then initialize them.
+    $net->initialize( mx->init->Xavier( magnitude => 2.24 ), ctx => $ctx );
+
+    # Trainer is for updating parameters with gradient.
+    my $trainer = gluon->Trainer( $net->collect_params(),
+        'sgd', { learning_rate => $lr, momentum => $momentum } );
+    my $metric = mx->metric->Accuracy();
+    my $loss   = gluon->loss->SoftmaxCrossEntropyLoss();
+
+    for my $epoch ( 0 .. $epochs - 1 ) {
+
         # reset data iterator and metric at begining of epoch.
         $metric->reset();
-	my $data;  my $label;
-        enumerate(sub {
-            my ($i, $d) = @_;
-            ($data, $label) = @$d;
-            $data = $data->as_in_context($ctx);
-            $label = $label->as_in_context($ctx);
-            # Start recording computation graph with record() section.
-            # Recorded graphs can then be differentiated with backward.
-            my $output;
-            autograd->record(sub {
-                $output = $net->($data);
-                my $L = $loss->($output, $label);
-                $L->backward;
-            });
-            # take a gradient step with batch_size equal to data.shape[0]
-            $trainer->step($data->shape->[0]);
-            # update metric at last.
-            $metric->update([$label], [$output]);
+        my $data;
+        my $label;
+        enumerate(
+            sub {
+                my ( $i, $d ) = @_;
+                ( $data, $label ) = @$d;
+                $data  = $data->as_in_context($ctx);
+                $label = $label->as_in_context($ctx);
 
-            if($i % $log_interval == 0 and $i > 0)
-            {
-                my ($name, $acc) = $metric->get();
-                print "[Epoch $epoch Batch $i] Training: $name=$acc\n";
-            }
-        }, \@{ $train_data });
+                # Start recording computation graph with record() section.
+                # Recorded graphs can then be differentiated with backward.
+                my $output;
+                autograd->record(
+                    sub {
+                        $output = $net->($data);
+                        my $L = $loss->( $output, $label );
+                        $L->backward;
+                    }
+                );
 
-        my ($name, $acc) = $metric->get();
+                # take a gradient step with batch_size equal to data.shape[0]
+                $trainer->step( $data->shape->[0] );
+
+                # update metric at last.
+                $metric->update( [$label], [$output] );
+
+                if ( $i % $log_interval == 0 and $i > 0 ) {
+                    my ( $name, $acc ) = $metric->get();
+                    print "[Epoch $epoch Batch $i] Training: $name=$acc\n";
+                }
+            },
+            \@{$train_data}
+        );
+
+        my ( $name, $acc ) = $metric->get();
         print "[Epoch $epoch] Training: $name=$acc\n";
 
-	get_mislabeled($train_data);
-	visualize($data, $epoch);
+        get_mislabeled($train_data);
+        visualize( $data, $epoch );
 
-        my ($val_name, $val_acc) = test($ctx);
+        my ( $val_name, $val_acc ) = test($ctx);
         print "[Epoch $epoch] Validation: $val_name=$val_acc\n";
-	#get_mislabeled($val_data);
+
+        #get_mislabeled($val_data);
     }
     $net->save_parameters('xmit.params');
 }
 
-train($epochs, $ctx);
+train( $epochs, $ctx );
