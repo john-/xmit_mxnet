@@ -159,26 +159,17 @@ sub dump_all_images {
         my $data  = ${ $tendl[$i] }[0];
         my $label = ${ $tendl[$i] }[1];
 
-        #say Dumper($data->shape);
 	$data = $data->at(0)->aspdl;
-	#say $data->shape;
 
-	if ($data->getdim(2) == 3) {
+	if ($data->getdim(2) == 3) {  # color
 	    $data = $data->reorder(2, 0, 1);
 	    $data = $data->slice('x', 'x', '-1:0');
-        } else {
+        } else {                      # grayscale
 	    $data = $data->squeeze;
 	    $data = $data->slice('x', '-1:0');
 	}
 
-        my $image = (
-            (
-	        $data
-                #pdl_shuffle( $data->at(0)->at(0)->aspdl,
-                #    [ reverse( 0 .. 49 ) ] ) + 1
-            ) * 255
-        )->byte;
-        #say $image->shape;
+        my $image = ( $data * 255 )->byte;
 
         $image->wpic("image_dump/$i.png");
     }
