@@ -41,7 +41,7 @@ GetOptions(
     'hybridize=i'    => \( my $hybridize    = 0 ),
     'cuda=i'         => \( my $cuda         = 0 ),
     'load_params=i'  => \( my $load_params  = 0 ),
-   'batch-size=i'   => \( my $batch_size   = 1 ),
+    'batch-size=i'   => \( my $batch_size   = 1 ),
     'epochs=i'       => \( my $epochs       = 10 ),
     'info=i'         => \( my $info        = 0 ),
     'help' => sub { HelpMessage(0) },
@@ -160,12 +160,16 @@ sub dump_all_images {
         my $label = ${ $tendl[$i] }[1];
 
         #say Dumper($data->shape);
+	$data = $data->at(0)->aspdl;
+	#say $data->shape;
 
-	# this probably needs to be more general in order to handle grey scale images
-	$data = $data->at(0)->aspdl->reorder(2, 0, 1)->slice('x', 'x', '-1:0');
-	#$data = $data->slice('x', 'x', '-1:0');
-
-        #say $data->at(0)->at(0)->aspdl->shape;
+	if ($data->getdim(2) == 3) {
+	    $data = $data->reorder(2, 0, 1);
+	    $data = $data->slice('x', 'x', '-1:0');
+        } else {
+	    $data = $data->squeeze;
+	    $data = $data->slice('x', '-1:0');
+	}
 
         my $image = (
             (
