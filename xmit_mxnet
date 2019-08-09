@@ -161,12 +161,12 @@ sub dump_all_images {
 
 	$data = $data->at(0)->aspdl;
 
-	if ($data->getdim(2) == 3) {  # color
-	    $data = $data->reorder(2, 0, 1);         # RGB values first
-	    $data = $data->slice('x', 'x', '-1:0');  # invert image
-        } else {                      # grayscale
-	    $data = $data->squeeze;                  # remove uneeded dimension
-	    $data = $data->slice('x', '-1:0');       # invert image
+	if ($data->getdim(2) == 3) {                 # color:
+	    $data = $data->reorder(2, 0, 1);         #  RGB values first
+	    $data = $data->slice('x', 'x', '-1:0');  #  invert image
+        } else {                                     # grayscale:
+	    $data = $data->squeeze;                  #  remove uneeded dimension
+	    $data = $data->slice('x', '-1:0');       #  invert image
 	}
 
         my $image = ( $data * 255 )->byte;
@@ -176,24 +176,36 @@ sub dump_all_images {
 }
 
 sub visualize {
-    my ( $data, $iter ) = @_;
+    my ( $batch, $iter ) = @_;
     mkdir "data_images";
     mkdir "data_images/$iter";
 
     #say Dumper($data->shape);
     for my $i ( 0 .. $batch_size - 1 ) {
 
+	my $data = $batch->at(0)->aspdl;
+
+	if ($data->getdim(2) == 3) {                 # color:
+	    $data = $data->reorder(2, 0, 1);         #  RGB values first
+	    $data = $data->slice('x', 'x', '-1:0');  #  invert image
+        } else {                                     # grayscale:
+	    $data = $data->squeeze;                  #  remove uneeded dimension
+	    $data = $data->slice('x', '-1:0');       #  invert image
+	}
+
+        my $image = ( $data * 255 )->byte;
+
         #say Dumper($data->at($i)->at(0)->aspdl);
 	# TODO: move image creation logic from dump_all_images to a sub and use it here
-        my $d = (
-            (
-                pdl_shuffle( $data->at($i)->at(0)->aspdl,
-                    [ reverse( 0 .. 49 ) ] ) + 1
-            ) * 255
-        )->byte;
+#        my $d = (
+#            (
+#                pdl_shuffle( $data->at($i)->at(0)->aspdl,
+#                    [ reverse( 0 .. 49 ) ] ) + 1
+#            ) * 255
+#        )->byte;
 
         #say $d->shape;
-        $d->wpic("data_images/$iter/$i.png");
+        $image->wpic("data_images/$iter/$i.png");
     }
 }
 
