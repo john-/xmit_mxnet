@@ -150,6 +150,24 @@ sub train_info {
     exit;
 }
 
+sub write_image {
+    my ($data, $location) = @_;
+
+    $data = $data->at(0)->aspdl;
+
+    if ($data->getdim(2) == 3) {                 # color:
+        $data = $data->reorder(2, 0, 1);         #  RGB values first
+        $data = $data->slice('x', 'x', '-1:0');  #  invert image
+    } else {                                     # grayscale:
+        $data = $data->squeeze;                  #  remove uneeded dimension
+        $data = $data->slice('x', '-1:0');       #  invert image
+    }
+
+    my $image = ( $data * 255 )->byte;
+
+    $image->wpic($location);
+}
+
 sub dump_all_images {
     my $set_ref = shift;
 
@@ -157,21 +175,9 @@ sub dump_all_images {
     mkdir "image_dump";
     for my $i ( 0 .. $#set ) {
         my $data  = ${ $set[$i] }[0];
-        my $label = ${ $set[$i] }[1];
+        #my $label = ${ $set[$i] }[1];
 
-	$data = $data->at(0)->aspdl;
-
-	if ($data->getdim(2) == 3) {                 # color:
-	    $data = $data->reorder(2, 0, 1);         #  RGB values first
-	    $data = $data->slice('x', 'x', '-1:0');  #  invert image
-        } else {                                     # grayscale:
-	    $data = $data->squeeze;                  #  remove uneeded dimension
-	    $data = $data->slice('x', '-1:0');       #  invert image
-	}
-
-        my $image = ( $data * 255 )->byte;
-
-        $image->wpic("image_dump/$i.png");
+        write_image($data, "image_dump/$i.png");
     }
 }
 
@@ -183,17 +189,19 @@ sub visualize {
     #say Dumper($data->shape);
     for my $i ( 0 .. $batch_size - 1 ) {
 
-	my $data = $batch->at(0)->aspdl;
+	#my $data = $batch->at(0)->aspdl;
+	#say Dumper($batch->[$i]);
+        write_image($batch, "data_images/$iter/$i.png");
 
-	if ($data->getdim(2) == 3) {                 # color:
-	    $data = $data->reorder(2, 0, 1);         #  RGB values first
-	    $data = $data->slice('x', 'x', '-1:0');  #  invert image
-        } else {                                     # grayscale:
-	    $data = $data->squeeze;                  #  remove uneeded dimension
-	    $data = $data->slice('x', '-1:0');       #  invert image
-	}
+	#if ($data->getdim(2) == 3) {                 # color:
+	#    $data = $data->reorder(2, 0, 1);         #  RGB values first
+	#    $data = $data->slice('x', 'x', '-1:0');  #  invert image
+        #} else {                                     # grayscale:
+	#    $data = $data->squeeze;                  #  remove uneeded dimension
+	#    $data = $data->slice('x', '-1:0');       #  invert image
+	#}
 
-        my $image = ( $data * 255 )->byte;
+        #my $image = ( $data * 255 )->byte;
 
         #say Dumper($data->at($i)->at(0)->aspdl);
 	# TODO: move image creation logic from dump_all_images to a sub and use it here
@@ -205,7 +213,7 @@ sub visualize {
 #        )->byte;
 
         #say $d->shape;
-        $image->wpic("data_images/$iter/$i.png");
+        #$image->wpic("data_images/$iter/$i.png");
     }
 }
 
