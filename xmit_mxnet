@@ -42,7 +42,7 @@ GetOptions(
     'cuda=i'         => \( my $cuda         = 0 ),
     'load_params=i'  => \( my $load_params  = 0 ),
     'batch-size=i'   => \( my $batch_size   = 1 ),
-    'epochs=i'       => \( my $epochs       = 10 ),
+    'epochs=i'       => \( my $epochs       = 20 ),
     'info=i'         => \( my $info        = 0 ),
     'help' => sub { HelpMessage(0) },
 ) or HelpMessage(1);
@@ -196,6 +196,8 @@ sub visualize {
 sub get_mislabeled {
     my $loader = shift;
 
+    mkdir "mislabeled";
+
     my @tendl = @$loader;
 
     my @text_labels = ( 'data', 'voice' );
@@ -217,7 +219,14 @@ sub get_mislabeled {
         my $otline;
         $otline .= sprintf( "%12s",  $pred ) . " :: ";
         $otline .= sprintf( "%-10s", $true ) . " ";
-        $otline .= ( $pred eq $true ) ? ".." : "XX";
+        #$otline .= ( $pred eq $true ) ? ".." : "XX";
+	if ( $pred eq $true ) {
+	    $otline .= "..";
+	} else {
+	    $otline .= "XX";
+	    my $hashish =  int($data->aspdl->sum);
+            write_image($data, sprintf("mislabeled/%s-%s.png", $hashish, $true));
+	}
 
         print $otline . "\n";
 
@@ -251,6 +260,10 @@ sub train {
 
     for my $epoch ( 0 .. $epochs - 1 ) {
 
+	## set scalars to hold time and mean loss
+	my $time = time();
+	my $llm;
+
         # reset data iterator and metric at begining of epoch.
         $metric->reset();
         my $data;
@@ -265,13 +278,17 @@ sub train {
                 # Start recording computation graph with record() section.
                 # Recorded graphs can then be differentiated with backward.
                 my $output;
+		my $L;
                 autograd->record(
                     sub {
                         $output = $net->($data);
-                        my $L = $loss->( $output, $label );
+                        $L = $loss->( $output, $label );
                         $L->backward;
                     }
                 );
+
+		## capture the mean loss
+		$llm = PDL::sclr($L->mean->aspdl );
 
                 # take a gradient step with batch_size equal to data.shape[0]
                 $trainer->step( $data->shape->[0] );
@@ -287,14 +304,21 @@ sub train {
             \@{$train_data}
         );
 
-        my ( $name, $acc ) = $metric->get();
-        print "[Epoch $epoch] Training: $name=$acc\n";
+        my ( $trn_name, $trn_acc ) = $metric->get();
+        #print "[Epoch $epoch] Training: $name=$acc\n";
 
-        get_mislabeled($train_data);
+        #get_mislabeled($train_data);
         visualize( $data, $epoch );
 
         my ( $val_name, $val_acc ) = test($ctx);
-        print "[Epoch $epoch] Validation: $val_name=$val_acc\n";
+        #print "[Epoch $epoch] Validation: $val_name=$val_acc\n";
+
+	## capture time interval
+	my $nowtime = time();
+	my $interval = $nowtime - $time;
+
+        say sprintf('Epoch %d: loss %.3f, train acc %.3f, test acc %.3f in %0.1f secs',
+		    $epoch, $llm, $trn_acc, $val_acc, $interval);
 
         #get_mislabeled($val_data);
     }
