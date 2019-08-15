@@ -43,7 +43,8 @@ GetOptions(
     'load_params=i'  => \( my $load_params  = 0 ),
     'batch-size=i'   => \( my $batch_size   = 1 ),
     'epochs=i'       => \( my $epochs       = 20 ),
-    'info=i'         => \( my $info        = 0 ),
+    'info=i'         => \( my $info         = 0 ),
+    'guess=i'        => \( my $guess        = 0 ),
     'help' => sub { HelpMessage(0) },
 ) or HelpMessage(1);
 
@@ -81,6 +82,8 @@ $net->name_scope(
 
 $net->hybridize() if $hybridize;
 $net->load_parameters('xmit.params') if $load_params;
+
+my @text_labels = ( 'data', 'voice' );
 
 # data
 
@@ -199,8 +202,6 @@ sub get_mislabeled {
     mkdir "mislabeled";
 
     my @tendl = @$loader;
-
-    my @text_labels = ( 'data', 'voice' );
 
     my $topline;
     $topline .= '  PREDICTION :: CORRECT' . "\n";
@@ -322,4 +323,23 @@ sub train {
     $net->save_parameters('xmit.params');
 }
 
-train( $epochs, $ctx );
+if ($guess) {
+    #my $image = 'training/test/voice/461.080_1533496176.wav.png';
+    my $image = 'training/test/data/461.205_1533495707.wav.png';
+    $image = mx->image->imread( $image );
+    # put channel first
+    $image = $image->transpose( [ 2, 0, 1 ] )->expand_dims( axis=>0 );  # change to channel, height, width
+    $image = $image->astype('float32') / 255.0;
+
+    my $prob = $net->($image)->softmax;
+
+    for my $idx (@{ $prob->topk(k=>0)->at(0) }) {
+	my $i = $idx->asscalar;
+	printf(
+	    "With prob = %.5f, it contains %s\n",
+	    $prob->at(0)->at($i)->asscalar, $text_labels[$i]
+	    );
+    }
+} else {
+    train( $epochs, $ctx );
+}
