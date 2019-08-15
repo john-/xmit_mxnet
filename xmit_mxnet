@@ -262,7 +262,7 @@ sub train {
 
 	## set scalars to hold time and mean loss
 	my $time = time();
-	my $llm;
+	my $lm;
 
         # reset data iterator and metric at begining of epoch.
         $metric->reset();
@@ -288,7 +288,7 @@ sub train {
                 );
 
 		## capture the mean loss
-		$llm = PDL::sclr($L->mean->aspdl );
+		$lm = PDL::sclr($L->mean->aspdl );
 
                 # take a gradient step with batch_size equal to data.shape[0]
                 $trainer->step( $data->shape->[0] );
@@ -305,23 +305,20 @@ sub train {
         );
 
         my ( $trn_name, $trn_acc ) = $metric->get();
-        #print "[Epoch $epoch] Training: $name=$acc\n";
 
-        #get_mislabeled($train_data);
         visualize( $data, $epoch );
 
         my ( $val_name, $val_acc ) = test($ctx);
-        #print "[Epoch $epoch] Validation: $val_name=$val_acc\n";
 
 	## capture time interval
 	my $nowtime = time();
 	my $interval = $nowtime - $time;
 
         say sprintf('Epoch %d: loss %.3f, train acc %.3f, test acc %.3f in %0.1f secs',
-		    $epoch, $llm, $trn_acc, $val_acc, $interval);
+		    $epoch, $lm, $trn_acc, $val_acc, $interval);
 
-        #get_mislabeled($val_data);
     }
+    get_mislabeled($val_data);
     $net->save_parameters('xmit.params');
 }
 
