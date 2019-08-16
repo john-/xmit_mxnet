@@ -21,6 +21,7 @@
 
 # https://github.com/apache/incubator-mxnet/blob/master/perl-package/AI-MXNet/examples/gluon/mnist.pl
 # http://blogs.perl.org/users/sergey_kolychev/2017/10/machine-learning-in-perl-part3-deep-convolutional-generative-adversarial-network.html
+# https://www.doviak.net/pages/mxnet/mxnet_p05.shtml
 
 use strict;
 use warnings;
@@ -328,7 +329,8 @@ if ($guess) {
     my $image = 'training/test/data/461.205_1533495707.wav.png';
     $image = mx->image->imread( $image );
     # put channel first
-    $image = $image->transpose( [ 2, 0, 1 ] )->expand_dims( axis=>0 );  # change to channel, height, width
+    $image = $image->transpose( [ 2, 0, 1 ] )->expand_dims( axis=>0 );  # change to batch, channel,
+                                                                        # height, width
     $image = $image->astype('float32') / 255.0;
 
     my $prob = $net->($image)->softmax;
