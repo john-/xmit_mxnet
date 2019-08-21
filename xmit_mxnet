@@ -325,8 +325,8 @@ sub train {
 }
 
 if ($guess) {
-    #my $image = 'training/test/voice/461.080_1533496176.wav.png';
-    my $image = 'training/test/data/461.205_1533495707.wav.png';
+    my $image = 'training/test/voice/461.080_1533496176.wav.png';
+    #my $image = 'training/test/data/461.205_1533495707.wav.png';
     $image = mx->image->imread( $image );
     # put channel first
     $image = $image->transpose( [ 2, 0, 1 ] )->expand_dims( axis=>0 );  # change to batch, channel,

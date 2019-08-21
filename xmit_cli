@@ -10,12 +10,16 @@ BEGIN { unshift @INC, "$FindBin::Bin/lib" }
 
 use TransmissionIdentifier;
 
-my $transid = TransmissionIdentifier->new( { hybridize => 0, load_params => 0 } );
+my $transid = TransmissionIdentifier->new( { hybridize => 0, load_params => 1 } );
 
 #say $transid->net_astext;
 
-$transid->info( { batch_size => 1 } );
+#$transid->info( { batch_size => 1 } );
 
-$transid->train( { cuda => 0, lr => 0.001, momentum => 0.9,
-                   batch_size => 1, epochs => 20, log_intrvl => 0 } );
+#$transid->train( { cuda => 0, lr => 0.001, momentum => 0.9,
+#                   batch_size => 1, epochs => 20, log_intrvl => 0 } );
 
+say $transid->classify(
+      'training/test/voice/461.080_1533496176.wav.png'
+    # 'training/test/data/461.205_1533495707.wav.png'
+);

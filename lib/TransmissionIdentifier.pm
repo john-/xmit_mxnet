@@ -168,6 +168,19 @@ sub write_image {
     $image->wpic($location);
 }
 
+sub dump_all_images {
+    my ($self, $set_ref) = @_;
+
+    my @set = @$set_ref;
+    mkdir "image_dump";
+    for my $i ( 0 .. $#set ) {
+        my $data  = ${ $set[$i] }[0];
+        #my $label = ${ $set[$i] }[1];
+
+        $self->write_image($data, "image_dump/$i.png");
+    }
+}
+
 sub get_mislabeled {
     my ($self, $loader) = @_;
 
@@ -203,6 +216,26 @@ sub get_mislabeled {
 
         print $otline . "\n";
 
+    }
+}
+
+sub classify {
+    my ($self, $image) = @_;
+
+    $image = mx->image->imread( $image );
+    # put channel first
+    $image = $image->transpose( [ 2, 0, 1 ] )->expand_dims( axis=>0 );  # change to batch, channel,
+                                                                        # height, width
+    $image = $image->astype('float32') / 255.0;
+
+    my $prob = $self->{net}->($image)->softmax;
+
+    for my $idx (@{ $prob->topk(k=>0)->at(0) }) {
+	my $i = $idx->asscalar;
+	printf(
+	    "With prob = %.5f, it contains %s\n",
+	    $prob->at(0)->at($i)->asscalar, $self->{text_labels}->[$i]
+	);
     }
 }
 
@@ -340,7 +373,7 @@ sub info {
     #print Dumper($train_data);
     #print $train_data->[0][0]->aspdl;
 
-    #dump_all_images($self->{train_data});
+    $self->dump_all_images($self->{train_data});
 }
     
 1;
