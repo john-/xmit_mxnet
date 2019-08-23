@@ -2,4 +2,6 @@
 training/
 data_images/
 image_dump/
+mislabeled/
+labels.txt
 xmit.params

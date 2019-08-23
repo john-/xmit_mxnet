@@ -20,6 +20,6 @@ $transid->train( { cuda => 0, lr => 0.001, momentum => 0.9,
                    batch_size => 1, epochs => 20, log_intrvl => 0 } );
 
 say $transid->classify(
-      'training/test/voice/461.080_1533496176.wav.png'
-    # 'training/test/data/461.205_1533495707.wav.png'
+    # 'training/test/voice/461.080_1533496176.wav.png'
+     'training/test/data/461.205_1533495707.wav.png'
 );

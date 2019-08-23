@@ -87,9 +87,15 @@ sub _initialize {
 
     $self->{net} = $net;
 
-    $self->{text_labels} = [ 'data', 'voice' ];
-    $self->{ctx}         = $self->{cuda} ? mx->gpu(0) : mx->cpu;
+    # load default labels
+    $self->{label_file} = 'labels.txt';
+    if (-e $self->{label_file}) {
+	open my $fh, '<', $self->{label_file};
+	chomp(@{$self->{text_labels}} = <$fh>);
+	close $fh;
+    }
 
+    $self->{ctx}         = $self->{cuda} ? mx->gpu(0) : mx->cpu;
 }
 
 sub net_astext {
@@ -138,6 +144,13 @@ sub _data_setup {
         shuffle    => 0
     );
 
+    # write out labels
+    open(my $fh, '>', $self->{label_file}) or die $!;
+    foreach (@{ $self->{train_dataset}->synsets }) {
+	say $_;
+        print $fh "$_\n";
+    }
+    close($fh);
 }
 
 sub _collect_args {
@@ -159,8 +172,8 @@ sub write_image {
     $data = $data->at(0)->aspdl;
 
     if ( $data->getdim(2) == 3 ) {    # color:
-        $data = $data->reorder( 2, 0, 1 )->slice( 'x', 'x', '-1:0' )
-          ;                           # RGB first then invert
+        $data = $data->reorder( 2, 0, 1 )->slice( 'x', 'x', '-1:0' );
+                                      # RGB first then invert
     }
     else {                            # grayscale:
         $data = $data->squeeze->slice( 'x', '-1:0' ); # remove uneeded dimension
@@ -233,8 +246,8 @@ sub classify {
     $image = mx->image->imread($image);
 
     # put channel first
-    $image = $image->transpose( [ 2, 0, 1 ] )->expand_dims( axis => 0 )
-      ;    # change to batch, channel,
+    $image = $image->transpose( [ 2, 0, 1 ] )->expand_dims( axis => 0 );
+           # change to batch, channel,
            # height, width
     $image = $image->astype('float32') / 255.0;
 
@@ -359,7 +372,6 @@ sub train {
 sub info {
     my ( $self, $args ) = @_;
 
-    #$self->{batch_size} = $args->{batch_size} ? $args->{batch_size} : 1;
     $self->_collect_args($args);
 
     $self->_data_setup;
@@ -372,7 +384,6 @@ sub info {
     say sprintf( 'data type: %s label type: %s', $data->dtype, $label->dtype );
     say Dumper( $data->at(0)->shape );
 
-    #say Dumper($train_dataset->items);
     say sprintf(
         'sample image name: %s, label: %s',
         $self->{train_dataset}->items->[0][0],
@@ -386,12 +397,7 @@ sub info {
     say sprintf( 'total training data: %d',   $self->{train_dataset}->len );
     say sprintf( 'total validation data: %d', $self->{val_dataset}->len );
 
-    #print Dumper($train_data->[0][0]->dtype);
-    #print Dumper($train_data);
-    #print $train_data->[0][0]->aspdl;
-
     $self->dump_all_images( $self->{train_data} );
 }
 
 1;
-
