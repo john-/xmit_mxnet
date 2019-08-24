@@ -45,7 +45,6 @@ sub new {
 
     };
 
-    #say Dumper($self);
     bless $self, $class;
 
     $self->_initialize();
@@ -87,15 +86,16 @@ sub _initialize {
 
     $self->{net} = $net;
 
-    # load default labels
     $self->{label_file} = 'labels.txt';
+
+    # load default labels
     if (-e $self->{label_file}) {
 	open my $fh, '<', $self->{label_file};
 	chomp(@{$self->{text_labels}} = <$fh>);
 	close $fh;
     }
 
-    $self->{ctx}         = $self->{cuda} ? mx->gpu(0) : mx->cpu;
+    $self->{ctx} = $self->{cuda} ? mx->gpu(0) : mx->cpu;
 }
 
 sub net_astext {
@@ -109,7 +109,6 @@ sub transformer {
 
     # put channel first
     $data = $data->transpose( [ 2, 0, 1 ] );  # change to channel, height, width
-                                              #say Dumper($data->shape);
     $data = $data->astype('float32') / 255.0;
 
     return ( $data, $label );
@@ -147,7 +146,6 @@ sub _data_setup {
     # write out labels
     open(my $fh, '>', $self->{label_file}) or die $!;
     foreach (@{ $self->{train_dataset}->synsets }) {
-	say $_;
         print $fh "$_\n";
     }
     close($fh);
@@ -397,7 +395,8 @@ sub info {
     say sprintf( 'total training data: %d',   $self->{train_dataset}->len );
     say sprintf( 'total validation data: %d', $self->{val_dataset}->len );
 
-    $self->dump_all_images( $self->{train_data} );
+    # dump_all_images was mostly done as leaning experience
+    #$self->dump_all_images( $self->{train_data} );
 }
 
 1;

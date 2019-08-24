@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+# This is the beginnings of utility to kick off training.  The TransmissionIdentifier module
+# will be used for classification in another program.
+
 use warnings;
 use strict;
 
