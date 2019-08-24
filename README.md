@@ -24,7 +24,8 @@ The spectrograms should be placed in a folder structure as documented in ImageFo
 Dependencies
 ------------
 
-ffmpeg
+- MXNet [pull](https://github.com/apache/incubator-mxnet/pull/15672) request against ImageFolderDataset
+- ffmpeg
 
 
 Based on these examples
