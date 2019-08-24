@@ -1,8 +1,8 @@
 This is intended to implement a CNN for audio classification of voice and data transmissions.
 
-The MXNet perl API is used to classify audio files (currently 2 categories).   Results appear to be good with my simple requirements as testing post training shows 100% success rate.
+The MXNet perl API is used to classify audio files (currently 2 categories).   Results so far are good.  With my simple requirements and minimal test data there is 100% correct classificaiton.
 
-The input is radio transmissions that represent human speaking or a data transmission.   Previously, I have been doing this classification with SoX voice detection function (much lower success rate).
+The input is radio transmissions (.wav) that represent either a human speaking or a data transmission.   Previously, I have been doing this classification with SoX voice detection function (much lower success rate).
 
 Unlike [Gluon Audio](https://cwiki.apache.org/confluence/display/MXNET/Gluon+-+Audio) which uses librosa to extract MFCCs I am creating spectrograms (png image files) as input to the network.   I would like to use the Gluon Audio approach however it is currently dependent on librosa which is python only.   Gluon Audio mentions MXNet FFT operator on CPU as a possible future replacement for this dependency.  So hopefully this can be used at some point.
 
@@ -13,12 +13,11 @@ It would be great if this helps anyone like the examples below helped me.  I am 
 To create training data
 -----------------------
 
-WAV file -> [extract middle second](https://github.com/john-/xmit_mxnet/blob/master/samples/461.205_1533495682.wav) -> [https://github.com/john-/xmit_mxnet/blob/master/samples/461.205_1533495682.wav.png](generate spectrogram PNG)
+WAV file -> [extract middle second](https://github.com/john-/xmit_mxnet/blob/master/samples/461.205_1533495682.wav) -> [generate spectrogram PNG](https://github.com/john-/xmit_mxnet/blob/master/samples/461.205_1533495682.wav.png)
 
 I am currently using ffmpeg to generate spectrograms outside the training process:
 
-`/usr/bin/ffmpeg -i audio.wav -lavfi showspectrumpic=s=100x50:scale=log:legend=off audio.png
-st_spect `
+`/usr/bin/ffmpeg -i audio.wav -lavfi showspectrumpic=s=100x50:scale=log:legend=off audio.png`
 
 The spectrograms should be placed in a folder structure as documented in ImageFolderDataset.
 
