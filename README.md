@@ -13,12 +13,14 @@ It would be great if this helps anyone like the examples below helped me.  I am 
 To create training data
 -----------------------
 
-WAV file -> extract middle second -> generate spectrogram PNG
+WAV file -> [extract middle second](https://github.com/john-/xmit_mxnet/blob/master/samples/461.205_1533495682.wav) -> [https://github.com/john-/xmit_mxnet/blob/master/samples/461.205_1533495682.wav.png](generate spectrogram PNG)
 
 I am currently using ffmpeg to generate spectrograms outside the training process:
 
+`/usr/bin/ffmpeg -i audio.wav -lavfi showspectrumpic=s=100x50:scale=log:legend=off audio.png
+st_spect `
 
-Folder structure containing spectrogram images should be as documented in ImageFolderDataset.
+The spectrograms should be placed in a folder structure as documented in ImageFolderDataset.
 
 Dependencies
 ------------
@@ -28,6 +30,6 @@ ffmpeg
 
 Based on these examples
 -----------------------
-[Sergey Kolychev's mnist.pl](https://github.com/apache/incubator-mxnet/blob/master/perl-package/AI-MXNet/examples/gluon/mnist.pl)
-[Sergey Kolychev's Machine learning in Perl, Part3](http://blogs.perl.org/users/sergey_kolychev/2017/10/machine-learning-in-perl-part3-deep-convolutional-generative-adversarial-network.html)
-[Eryk Wdowiak's MXNet in Perl](https://www.doviak.net/pages/mxnet/mxnet_p05.shtml)
+- [Sergey Kolychev's mnist.pl](https://github.com/apache/incubator-mxnet/blob/master/perl-package/AI-MXNet/examples/gluon/mnist.pl)
+- [Sergey Kolychev's Machine learning in Perl, Part3](http://blogs.perl.org/users/sergey_kolychev/2017/10/machine-learning-in-perl-part3-deep-convolutional-generative-adversarial-network.html)
+- [Eryk Wdowiak's MXNet in Perl](https://www.doviak.net/pages/mxnet/mxnet_p05.shtml)
