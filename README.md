@@ -15,7 +15,7 @@ To create training data
 
 WAV file -> [extract middle second](https://github.com/john-/xmit_mxnet/blob/master/samples/461.205_1533495682.wav) -> [generate spectrogram PNG](https://github.com/john-/xmit_mxnet/blob/master/samples/461.205_1533495682.wav.png)
 
-I am currently using ffmpeg to generate spectrograms outside the training process:
+Currently ffmpeg is used to generate spectrograms outside the training process.  Training data is created via a seperate program that uses metadata from database and audio files from disk.  Spectrograms are generated like so:
 
 `/usr/bin/ffmpeg -i audio.wav -lavfi showspectrumpic=s=100x50:scale=log:legend=off audio.png`
 
