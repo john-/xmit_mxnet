@@ -6,7 +6,7 @@ The input is radio transmissions (.wav) that represent either a human speaking o
 
 Unlike [Gluon Audio](https://cwiki.apache.org/confluence/display/MXNET/Gluon+-+Audio) which uses librosa to extract MFCCs I am creating spectrograms (png image files) as input to the network.   I would like to use the Gluon Audio approach however it is currently dependent on librosa which is python only.   Gluon Audio mentions MXNet FFT operator on CPU as a possible future replacement for this dependency.  So hopefully this can be used at some point.
 
-Although the the use of machine learning for my requirements is probably overkill I plan on exanding the categories/capability in the future.
+Although the the use of machine learning for my requirements is probably overkill I plan on expanding the categories/capability in the future.
 
 It would be great if this helps anyone like the examples below helped me.  I am open to any feedback.
 
