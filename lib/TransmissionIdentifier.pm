@@ -35,6 +35,8 @@ use Data::Dumper;
 
 use feature 'say';
 
+our $VERSION = '1.0';
+
 sub new {
     my ( $class, $args ) = @_;
 

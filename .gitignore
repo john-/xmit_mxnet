@@ -5,3 +5,7 @@ image_dump/
 mislabeled/
 labels.txt
 xmit.params
+MYMETA.json
+MYMETA.yml
+Makefile
+			

@@ -5,7 +5,7 @@ my $preop =
 
 WriteMakefile(
     NAME            => 'TransmissionIdentifier',
-    VERSION_FROM    => 'lib/TransmissionIdentifier',
+    VERSION_FROM    => 'lib/TransmissionIdentifier.pm',
     PREREQ_PM => {
         'AI::MXNet'                         => 0,
         'AI::MXNet::Gluon'                  => 0,
