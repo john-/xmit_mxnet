@@ -1,0 +1,7 @@
+Makefile.PL
+lib/TransmissionIdentifier.pm
+examples/xmit_cli
+script/xmit_xmet
+LICENSE
+MANIFEST			This list of files
+t/00use.t
