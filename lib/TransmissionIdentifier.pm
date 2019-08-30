@@ -253,14 +253,18 @@ sub classify {
 
     my $prob = $self->{net}->($image)->softmax;
 
+    my @classifications;
     for my $idx ( @{ $prob->topk( k => 0 )->at(0) } ) {
         my $i = $idx->asscalar;
-        printf(
-            "With prob = %.5f, it contains %s\n",
-            $prob->at(0)->at($i)->asscalar,
-            $self->{text_labels}->[$i]
-        );
+	push @classifications, { $self->{text_labels}->[$i] =>
+                                 $prob->at(0)->at($i)->asscalar }
+        #printf(
+        #    "With prob = %.5f, it contains %s\n",
+        #    $prob->at(0)->at($i)->asscalar,
+        #    $self->{text_labels}->[$i]
+        #);
     }
+    return \@classifications;
 }
 
 sub test {
