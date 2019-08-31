@@ -44,14 +44,22 @@ sub new {
     my $self = {
         hybridize   => $args->{hybridize}   ? $args->{hybridize}   : 0,
         load_params => $args->{load_params} ? $args->{load_params} : 0,
-
     };
 
     bless $self, $class;
 
-    $self->_initialize();
+    if ($args->{params_dir}) {
+	$self->{params_dir} = $args->{params_dir};
+	$self->{params_dir} =~ s!/*$!/!; # Add a trailing slash
+    } else {
+	$self->{params_dir} = '';
+    }
 
-    return $self;
+    #return 'could not initialize TransmissionIdentifier' if !$self->_initialize();
+    my $ret =  $self->_initialize();
+    return $ret ? $ret : $self
+
+    #return $self;
 }
 
 sub _initialize {
@@ -84,11 +92,18 @@ sub _initialize {
     );
 
     $net->hybridize() if $self->{hybridize};
-    $net->load_parameters('xmit.params') if $self->{load_params};
+
+    my $params = $self->{params_dir} . 'xmit.params';
+    if ($self->{load_params} && -e $params) {
+	$net->load_parameters($params);
+    } else {
+	return sprintf('param file not found or error loading it: %s', $params);
+	#return 0;
+    }
 
     $self->{net} = $net;
 
-    $self->{label_file} = 'labels.txt';
+    $self->{label_file} = $self->{params_dir} . 'labels.txt';
 
     # load default labels
     if (-e $self->{label_file}) {
@@ -98,6 +113,8 @@ sub _initialize {
     }
 
     $self->{ctx} = $self->{cuda} ? mx->gpu(0) : mx->cpu;
+
+    return 0;
 }
 
 sub net_astext {
