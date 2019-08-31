@@ -240,7 +240,7 @@ sub get_mislabeled {
     }
 }
 
-sub classify {
+sub is_voice {
     my ( $self, $image ) = @_;
 
     $image = mx->image->imread($image);
@@ -252,20 +252,34 @@ sub classify {
     $image = $image->astype('float32') / 255.0;
 
     my $prob = $self->{net}->($image)->softmax;
+    #print Dumper($prob->at(0));
 
-    my %classifications;
+    my $idxs = $prob->topk( k => 0 )->at(0);
+    print Dumper($idxs);
+    my $top_idx = $idxs->[0]->asscalar;
+    my $top_prob = $prob->at(0)->at($top_idx)->asscalar;
+    my $top_label = $self->{text_labels}->[$top_idx];
+    say sprintf('top prob: %.5f, label: %s', $top_prob, $top_label);
+
+    #my %classifications;
     for my $idx ( @{ $prob->topk( k => 0 )->at(0) } ) {
         my $i = $idx->asscalar;
-	$classifications{ $self->{text_labels}->[$i] } =
-	    $prob->at(0)->at($i)->asscalar;
+	#$classifications{ $self->{text_labels}->[$i] } =
+	 #   $prob->at(0)->at($i)->asscalar;
 
-        #printf(
-        #    "With prob = %.5f, it contains %s\n",
-        #    $prob->at(0)->at($i)->asscalar,
-        #    $self->{text_labels}->[$i]
-        #);
+        printf(
+            "With prob = %.5f, it contains %s\n",
+            $prob->at(0)->at($i)->asscalar,
+            $self->{text_labels}->[$i]
+        );
     }
-    return \%classifications;
+    #return \%classifications;
+    if (($top_label eq 'voice') and
+	($top_prob  >= 0.5)) {
+	    return 1;
+    } else {
+	return 0;
+    }
 }
 
 sub test {
