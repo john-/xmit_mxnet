@@ -51,8 +51,7 @@ sub new {
     if ($args->{params_dir}) {
 	$self->{params_dir} = $args->{params_dir};
 	$self->{params_dir} =~ s!/*$!/!; # Add a trailing slash
-    } else {
-	$self->{params_dir} = '';
+        $self->{params} =  $self->{params_dir} . 'xmit.params';
     }
 
     #return 'could not initialize TransmissionIdentifier' if !$self->_initialize();
@@ -93,12 +92,10 @@ sub _initialize {
 
     $net->hybridize() if $self->{hybridize};
 
-    my $params = $self->{params_dir} . 'xmit.params';
-    if ($self->{load_params} && -e $params) {
-	$net->load_parameters($params);
+    if ($self->{load_params} && -e $self->{params}) {
+	$net->load_parameters($self->{params});
     } else {
-	return sprintf('param file not found or error loading it: %s', $params);
-	#return 0;
+	return sprintf('param file not found or error loading it: %s', $self->{params});
     }
 
     $self->{net} = $net;
@@ -398,7 +395,7 @@ sub train {
 
     }
     $self->get_mislabeled( $self->{val_data} );
-    $self->{net}->save_parameters('xmit.params');
+    $self->{net}->save_parameters($self->{params});
 
 }
 
