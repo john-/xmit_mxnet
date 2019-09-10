@@ -20,13 +20,17 @@ dies_ok { $base->audio_to_spectrogram(
              { input => '/tmp/foo', output => '/tmp/bar', duration => 3.0 }
 	      ) } 'input file does not exist';
 
+my $src = './samples/data1.wav';
+my $cmp = './samples/data1.png';
+my $out = '/tmp/data1.png';
+unlink 
 lives_ok { $base->audio_to_spectrogram( 
-             { input => './samples/data1.wav',
-               output => '/tmp/data1.png',
+             { input  => $src,
+               output => $out,
                 }
 	      ) } 'input file does not exist';
 
-compare_ok('./samples/data1.png', '/tmp/data1.png',
+compare_ok($cmp, $out,
 	   'files are the same');
 
 1;

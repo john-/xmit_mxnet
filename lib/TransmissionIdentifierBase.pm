@@ -6,10 +6,6 @@ use Mouse;
 
 use Audio::Wav;
 
-#has 'input'    => (is => 'rw', isa => 'Str', required => 1);
-#has 'output'   => (is => 'rw', isa => 'Str', required => 1);
-#has 'duration' => (is => 'rw', isa => 'Int', required => 1);
-
 use Types::Standard qw( Int Str Num);
 use Params::ValidationCompiler qw( validation_for );
 
@@ -34,14 +30,11 @@ sub audio_to_spectrogram {
 	$read->{handle}->close;    # http://www.perlmonks.org/bare/?node_id=946696
     }
 
-
-    # /usr/bin/ffmpeg -loglevel error -y -i audio.wav -ss 00:00:00 -t 00:00:01 -lavfi showspectrumpic=s=100x50:scale=log:legend=off audio.png
     my $start = $args{duration}/2-0.5;
     my @args = ( '/usr/bin/ffmpeg',  '-loglevel', 'error', '-y', '-ss', $start, '-t', 1.0, '-i', $args{input},
                   '-lavfi',  'showspectrumpic=s=100x50:scale=log:legend=off',  $args{output});
     if (system( @args ) != 0) {
 	my $err = "system @args failed: $?";
-	#$self->{app}->log->error($err);
 	die $err;
     }
     return;

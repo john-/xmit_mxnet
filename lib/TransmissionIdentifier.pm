@@ -1,21 +1,15 @@
 package TransmissionIdentifier;
 
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License.  You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied.  See the License for the
-# specific language governing permissions and limitations
-# under the License.
+use Mouse;
+
+use Types::Standard qw( Int Str Bool);
+use Params::ValidationCompiler qw( validation_for );
+
+extends 'TransmissionIdentifierBase';
+
+has 'hybridize'   => (is => 'rw', isa => 'Bool', default => 0);
+has 'load_params' => (is => 'rw', isa => 'Bool', default => 0);
+has 'params_dir'  => (is => 'rw', isa => 'Str',  default => '.');
 
 # code borrows extensively from at least the following:
 
@@ -23,8 +17,6 @@ package TransmissionIdentifier;
 # http://blogs.perl.org/users/sergey_kolychev/2017/10/machine-learning-in-perl-part3-deep-convolutional-generative-adversarial-network.html
 # https://www.doviak.net/pages/mxnet/mxnet_p05.shtml
 
-use strict;
-use warnings;
 use AI::MXNet qw(mx);
 use AI::MXNet::Gluon qw(gluon);
 use AI::MXNet::AutoGrad qw(autograd);
@@ -37,31 +29,31 @@ use feature 'say';
 
 our $VERSION = '1.0';
 
-sub new {
-    my ( $class, $args ) = @_;
+#sub new {
+#    my ( $class, $args ) = @_;
 
-    #say Dumper($args);
-    my $self = {
-        hybridize   => $args->{hybridize}   ? $args->{hybridize}   : 0,
-        load_params => $args->{load_params} ? $args->{load_params} : 0,
-    };
+#    #say Dumper($args);
+#    my $self = {
+#        hybridize   => $args->{hybridize}   ? $args->{hybridize}   : 0,
+#        load_params => $args->{load_params} ? $args->{load_params} : 0,
+#    };
 
-    bless $self, $class;
+#    bless $self, $class;
 
-    if ($args->{params_dir}) {
-	$self->{params_dir} = $args->{params_dir};
-	$self->{params_dir} =~ s!/*$!/!; # Add a trailing slash
-        $self->{params} =  $self->{params_dir} . 'xmit.params';
-    }
+#    if ($args->{params_dir}) {
+#	$self->{params_dir} = $args->{params_dir};
+#	$self->{params_dir} =~ s!/*$!/!; # Add a trailing slash
+#        $self->{params} =  $self->{params_dir} . 'xmit.params';
+#    }
 
     #return 'could not initialize TransmissionIdentifier' if !$self->_initialize();
-    my $ret =  $self->_initialize();
-    return $ret ? $ret : $self
+#    my $ret =  $self->_initialize();
+#    return $ret ? $ret : $self
 
     #return $self;
-}
+#}
 
-sub _initialize {
+sub BUILD {
     my $self = shift;
 
     my $net = nn->Sequential();
@@ -90,28 +82,36 @@ sub _initialize {
         }
     );
 
-    $net->hybridize() if $self->{hybridize};
-
-    if ($self->{load_params} && -e $self->{params}) {
-	$net->load_parameters($self->{params});
-    } else {
-	return sprintf('param file not found or error loading it: %s', $self->{params});
-    }
+    $net->hybridize() if $self->hybridize;
 
     $self->{net} = $net;
 
-    $self->{label_file} = $self->{params_dir} . 'labels.txt';
+    my $dir = $self->params_dir;
+    $dir =~ s!/*$!/!; # Add a trailing slash
+    $self->params_dir($dir);
+
+    if ($self->load_params) {
+	my $self->{params} = $self->params_dir . 'xmit.params';
+        if (-e $self->{params}) {
+	    $net->load_parameters($self->{params});
+        } else {
+	    die sprintf('param file not found or error loading it: %s', $self->{params});
+	}
+    }
+
+    $self->{label_file} = $self->params_dir . 'labels.txt';
 
     # load default labels
     if (-e $self->{label_file}) {
 	open my $fh, '<', $self->{label_file};
 	chomp(@{$self->{text_labels}} = <$fh>);
 	close $fh;
+    } else {
+	die sprintf('labels.txt param file not found or error loading it: %s', $self->{label_file});
     }
 
     $self->{ctx} = $self->{cuda} ? mx->gpu(0) : mx->cpu;
 
-    return 0;
 }
 
 sub net_astext {
@@ -256,6 +256,8 @@ sub get_mislabeled {
 
 sub is_voice {
     my ( $self, $image ) = @_;
+
+    die 'need to load params if going to classify' if !$self->load_params;
 
     $image = mx->image->imread($image);
 
