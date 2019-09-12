@@ -2,10 +2,12 @@ package TransmissionIdentifier;
 
 use Mouse;
 
-use Types::Standard qw( Int Str Bool);
-use Params::ValidationCompiler qw( validation_for );
+#use Types::Standard qw( Int Str Bool);
+#use Params::ValidationCompiler qw( validation_for );
 
 extends 'TransmissionIdentifierBase';
+
+#use Method::Signatures;
 
 has 'hybridize'   => (is => 'rw', isa => 'Bool', default => 0);
 has 'load_params' => (is => 'rw', isa => 'Bool', default => 0);
@@ -95,7 +97,7 @@ sub BUILD {
         if (-e $self->{params}) {
 	    $net->load_parameters($self->{params});
         } else {
-	    die sprintf('param file not found or error loading it: %s', $self->{params});
+	    die sprintf('param file not found: %s', $self->{params});
 	}
     }
 
@@ -107,7 +109,7 @@ sub BUILD {
 	chomp(@{$self->{text_labels}} = <$fh>);
 	close $fh;
     } else {
-	die sprintf('labels.txt param file not found or error loading it: %s', $self->{label_file});
+	die sprintf('labels.txt param file not found: %s', $self->{label_file});
     }
 
     $self->{ctx} = $self->{cuda} ? mx->gpu(0) : mx->cpu;
@@ -255,11 +257,18 @@ sub get_mislabeled {
 }
 
 sub is_voice {
-    my ( $self, $image ) = @_;
+    my ( $self, $file ) = @_;
 
     die 'need to load params if going to classify' if !$self->load_params;
 
-    $image = mx->image->imread($image);
+    if ($file =~ m/\.wav$/) {
+        my $wav = $file;
+        $file = '/tmp/classify.png';
+	$self->audio_to_spectrogram( input  => $wav,
+				     output => $file );
+    }
+
+    my $image = mx->image->imread($file);
 
     # put channel first
     $image = $image->transpose( [ 2, 0, 1 ] )->expand_dims( axis => 0 );
