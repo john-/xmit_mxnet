@@ -11,9 +11,17 @@ $| = 1;
 
 use TransmissionIdentifier;
 
+dies_ok { my $classify = TransmissionIdentifier->new( { load_params => 1, params => '/tmp/foo' } ) }
+         'params file does not exist';
+
+dies_ok { my $classify = TransmissionIdentifier->new( { labels => '/tmp/foo' } ) }
+         'label file does not exist';
+
 my $classify = TransmissionIdentifier->new();
 
 ok( defined($classify) && ref $classify eq 'TransmissionIdentifier',     'new() works' );
+
+like( $classify->net_astext, qr/\Q(7): Dense(2 -> 0, linear)\E/, 'returns network');
 
 dies_ok { $classify->is_voice('./samples/data1.png'), 'data' }
          'need to load params';

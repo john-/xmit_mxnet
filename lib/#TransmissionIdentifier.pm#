@@ -14,11 +14,10 @@ has 'load_params' => (is => 'ro', isa => 'Bool', default => 0);
 has 'params'      => (is => 'ro', isa => 'Str',  default => 'xmit.params');
 has 'labels'      => (is => 'ro', isa => 'Str',  default => 'labels.txt');
 
-has 'net'         => (is => 'bare',
-                      isa => 'AI::MXNet::Gluon::NN',
-		      builder => '_net',
-		      #                      lazy => 1);
-                     );
+#has 'net'         => (is => 'bare',
+#                      isa => 'AI::MXNet::Gluon::NN',
+#		      builder => '_net',
+#                      lazy => 1);
 
 # code borrows extensively from at least the following:
 
