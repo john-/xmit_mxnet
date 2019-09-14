@@ -13,12 +13,10 @@ has 'hybridize'   => (is => 'ro', isa => 'Bool', default => 0);
 has 'load_params' => (is => 'ro', isa => 'Bool', default => 0);
 has 'params'      => (is => 'ro', isa => 'Str',  default => 'xmit.params');
 has 'labels'      => (is => 'ro', isa => 'Str',  default => 'labels.txt');
-
-has 'net'         => (is => 'bare',
-                      isa => 'AI::MXNet::Gluon::NN',
+has 'net'         => (is => 'ro',
+                      isa => 'AI::MXNet::Gluon::NN::Sequential',
 		      builder => '_net',
-		      #                      lazy => 1);
-                     );
+                      );
 
 # code borrows extensively from at least the following:
 
@@ -38,31 +36,7 @@ use feature 'say';
 
 our $VERSION = '1.0';
 
-#sub new {
-#    my ( $class, $args ) = @_;
-
-#    #say Dumper($args);
-#    my $self = {
-#        hybridize   => $args->{hybridize}   ? $args->{hybridize}   : 0,
-#        load_params => $args->{load_params} ? $args->{load_params} : 0,
-#    };
-
-#    bless $self, $class;
-
-#    if ($args->{params_dir}) {
-#	$self->{params_dir} = $args->{params_dir};
-#	$self->{params_dir} =~ s!/*$!/!; # Add a trailing slash
-#        $self->{params} =  $self->{params_dir} . 'xmit.params';
-#    }
-
-    #return 'could not initialize TransmissionIdentifier' if !$self->_initialize();
-#    my $ret =  $self->_initialize();
-#    return $ret ? $ret : $self
-
-    #return $self;
-#}
-
-sub BUILD {
+sub _net {
     my $self = shift;
 
     my $net = nn->Sequential();
@@ -93,7 +67,7 @@ sub BUILD {
 
     $net->hybridize() if $self->hybridize;
 
-    $self->{net} = $net;
+    #$self->{net} = $net;
 
     if ($self->load_params) {
 	#my $self->{params} = $self->params_dir . 'xmit.params';
@@ -114,12 +88,7 @@ sub BUILD {
 
     $self->{ctx} = $self->{cuda} ? mx->gpu(0) : mx->cpu;
 
-}
-
-sub net_astext {
-    my $self = shift;
-
-    return $self->{net};
+    return $net;
 }
 
 sub transformer {
@@ -232,7 +201,7 @@ sub get_mislabeled {
         my $data  = ${ $tendl[$i] }[0];
         my $label = ${ $tendl[$i] }[1];
 
-        my $ot   = $self->{net}->($data)->argmax( { axis => 1 } );
+        my $ot   = $self->net->($data)->argmax( { axis => 1 } );
         my $pred = $self->{text_labels}[ PDL::sclr( $ot->aspdl ) ];
         my $true = $self->{text_labels}[ PDL::sclr( $label->aspdl ) ];
 
@@ -276,7 +245,7 @@ sub is_voice {
            # height, width
     $image = $image->astype('float32') / 255.0;
 
-    my $prob = $self->{net}->($image)->softmax;
+    my $prob = $self->net->($image)->softmax;
 
     my $idxs = $prob->topk( k => 0 )->at(0);
     my $top_idx = $idxs->[0]->asscalar;
@@ -315,7 +284,7 @@ sub test {
         my ( $data, $label ) = @$d;
         $data  = $data->as_in_context($ctx);
         $label = $label->as_in_context($ctx);
-        my $output = $self->{net}->($data);
+        my $output = $self->net->($data);
         $metric->update( [$label], [$output] );
     }
     return $metric->get;
@@ -331,11 +300,11 @@ sub train {
     $self->_data_setup;
 
     # Collect all parameters from net and its children, then initialize them.
-    $self->{net}
+    $self->net
       ->initialize( mx->init->Xavier( magnitude => 2.24 ), ctx => $ctx );
 
     # Trainer is for updating parameters with gradient.
-    my $trainer = gluon->Trainer( $self->{net}->collect_params(),
+    my $trainer = gluon->Trainer( $self->net->collect_params(),
         'sgd',
         { learning_rate => $self->{lr}, momentum => $self->{momentum} } );
     my $metric = mx->metric->Accuracy();
@@ -364,7 +333,7 @@ sub train {
                 my $L;
                 autograd->record(
                     sub {
-                        $output = $self->{net}->($data);
+                        $output = $self->net->($data);
                         $L      = $loss->( $output, $label );
                         $L->backward;
                     }
@@ -406,7 +375,7 @@ sub train {
 
     }
     $self->get_mislabeled( $self->{val_data} );
-    $self->{net}->save_parameters($self->{params});
+    $self->net->save_parameters($self->{params});
 
 }
 
@@ -417,7 +386,7 @@ sub info {
 
     $self->_data_setup;
 
-    say $self->net_astext;
+    say $self->net;
 
     my $sample = $self->{train_data}->[0];
     my $data   = $sample->[0];
