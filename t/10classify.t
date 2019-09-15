@@ -23,6 +23,9 @@ ok( defined($classify) && ref $classify eq 'TransmissionIdentifier',     'new() 
 
 like( $classify->net, qr/\Q(7): Dense(2 -> 0, linear)\E/, 'returns network');
 
+my $info;
+lives_ok{ $info = $classify->info } 'got the info';
+
 dies_ok { $classify->is_voice('./samples/data1.png'), 'data' }
          'need to load params';
 

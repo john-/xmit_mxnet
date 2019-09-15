@@ -1,6 +1,8 @@
 Makefile.PL
+lib/TransmissionIdentifierBase.pm
 lib/TransmissionIdentifier.pm
 examples/xmit_cli
+examples/base_cli
 script/xmit_mxnet
 LICENSE
 MANIFEST			This list of files

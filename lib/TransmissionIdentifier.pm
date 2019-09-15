@@ -7,7 +7,7 @@ use Mouse;
 
 extends 'TransmissionIdentifierBase';
 
-use Method::Signatures;
+#use Method::Signatures;
 
 has 'hybridize'   => (is => 'ro', isa => 'Bool', default => 0);
 has 'load_params' => (is => 'ro', isa => 'Bool', default => 0);
@@ -17,6 +17,7 @@ has 'net'         => (is => 'ro',
                       isa => 'AI::MXNet::Gluon::NN::Sequential',
 		      builder => '_net',
                       );
+has 'batch_size'  =>  (is => 'rw', isa => 'Int', default => 1);
 
 # code borrows extensively from at least the following:
 
@@ -114,7 +115,7 @@ sub _data_setup {
 
     $self->{train_data} = gluon->data->DataLoader(
         $self->{train_dataset},
-        batch_size => $self->{batch_size},
+        batch_size => $self->batch_size,
         shuffle    => 1,
         last_batch => 'discard'
     );
@@ -126,7 +127,7 @@ sub _data_setup {
     );
     $self->{val_data} = gluon->data->DataLoader(
         $self->{val_dataset},
-        batch_size => $self->{batch_size},
+        batch_size => $self->batch_size,
         shuffle    => 0
     );
 
@@ -141,8 +142,8 @@ sub _data_setup {
 sub _collect_args {
     my ( $self, $args ) = @_;
 
-    $self->{batch_size} =
-      exists( $args->{batch_size} ) ? $args->{batch_size} : 1;
+#    $self->{batch_size} =
+#      exists( $args->{batch_size} ) ? $args->{batch_size} : 1;
     $self->{cuda}     = exists( $args->{cuda} )     ? $args->{cuda}     : 0;
     $self->{epochs}   = exists( $args->{epochs} )   ? $args->{epochs}   : 20;
     $self->{lr}       = exists( $args->{lr} )       ? $args->{lr}       : 0.001;
@@ -382,11 +383,7 @@ sub train {
 sub info {
     my ( $self, $args ) = @_;
 
-    $self->_collect_args($args);
-
     $self->_data_setup;
-
-    say $self->net;
 
     my $sample = $self->{train_data}->[0];
     my $data   = $sample->[0];
