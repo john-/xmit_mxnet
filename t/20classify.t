@@ -5,26 +5,20 @@ use warnings;
 
 #use Test::More tests => 6;
 use Test::More;
+
+if (!-e 'xmit.params') {
+    plan skip_all => 'Test irrelevant without trained model';
+}
+
 use Test::Exception;
-use Test::Files;
+#use Test::Files;
 $| = 1;
 
 use TransmissionIdentifier;
 
-dies_ok { my $classify = TransmissionIdentifier->new( { load_params => 1, params => '/tmp/foo' } ) }
-         'params file does not exist';
-
-dies_ok { my $classify = TransmissionIdentifier->new( { labels => '/tmp/foo' } ) }
-         'label file does not exist';
-
 my $classify = TransmissionIdentifier->new();
 
 ok( defined($classify) && ref $classify eq 'TransmissionIdentifier',     'new() works' );
-
-like( $classify->net, qr/\Q(7): Dense(2 -> 0, linear)\E/, 'returns network');
-
-my $info;
-lives_ok{ $info = $classify->info } 'got the info';
 
 dies_ok { $classify->is_voice('./samples/data1.png'), 'data' }
          'need to load params';

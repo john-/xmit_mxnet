@@ -80,11 +80,12 @@ sub _net {
     }
 
     if (-e $self->labels) {
-	open my $fh, '<', $self->labels;
-	chomp(@{$self->{text_labels}} = <$fh>);
-	close $fh;
+        open my $fh, '<', $self->labels;
+        chomp(@{$self->{text_labels}} = <$fh>);
+        close $fh;
     } else {
-	die sprintf('labels file not found: %s', $self->labels);
+	# TODO:  Not a problem if no label file at this point.   It is needed for classification.
+        #die sprintf('labels file not found: %s', $self->labels);
     }
 
     $self->{ctx} = $self->{cuda} ? mx->gpu(0) : mx->cpu;
@@ -132,7 +133,7 @@ sub _data_setup {
     );
 
     # write out labels
-    open(my $fh, '>', $self->{label_file}) or die $!;
+    open(my $fh, '>', $self->labels) or die $!;
     foreach (@{ $self->{train_dataset}->synsets }) {
         print $fh "$_\n";
     }

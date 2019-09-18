@@ -8,3 +8,5 @@ xmit.params
 blib/
 pm_to_blib
 _Inline/
+mislabeled/
+image_dump/

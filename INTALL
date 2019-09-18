@@ -1,0 +1,3 @@
+cpanm --sudo --installdeps .
+
+untar training data to ./training

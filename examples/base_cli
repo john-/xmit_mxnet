@@ -17,9 +17,8 @@ my $base = TransmissionIdentifierBase->new();
 say "base: " . Dumper($base);
 
 $base->audio_to_spectrogram(
-    { input => './samples/461.205_1533495682.wav',
-      output => '/tmp/461.205_1533495682.wav.png',
-    }
+     input => './samples/data1.wav',
+     output => '/tmp/data1.png',
                   )
 
 #say $transid->net_astext;
