@@ -1,3 +1,5 @@
+sudo apt install netpbm # needed for writing out pbm files
+
 cpanm --sudo --installdeps .
 
 untar training data to ./training
