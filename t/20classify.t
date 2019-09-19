@@ -30,8 +30,8 @@ lives_ok { $classify = TransmissionIdentifier->new( { load_params => 1 } ) }
 
 ok($classify->is_voice('./samples/data1.png') ==  0, 'should be data');
 
-ok($classify->is_voice('/cart/data/wav/2018_racing/imsa/469.155_1533496465.wav') ==  1, 'should be voice');
-ok($classify->is_voice('/cart/data/training/test/data/464.325_1560721394.wav.png') ==  0, 'should be data');
+#ok($classify->is_voice('./samples/voice1.wav') ==  1, 'should be voice');
+ok($classify->is_voice('./samples/data1.wav') ==  0, 'should be data');
 
 done_testing();
 
