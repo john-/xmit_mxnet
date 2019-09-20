@@ -19,6 +19,14 @@ has 'net'         => (is => 'ro',
                       );
 has 'batch_size'  =>  (is => 'rw', isa => 'Int', default => 1);
 
+#    $self->{cuda}     = exists( $args->{cuda} )     ? $args->{cuda}     : 0;
+#    $self->{epochs}   = exists( $args->{epochs} )   ? $args->{epochs}   : 20;
+#    $self->{lr}       = exists( $args->{lr} )       ? $args->{lr}       : 0.001;
+#    $self->{momentum} = exists( $args->{momentum} ) ? $args->{momentum} : 0.9;
+#    $self->{log_intrvl} =
+#      exists( $args->{log_intrvl} ) ? $args->{log_intrvl} : 100;
+
+
 # code borrows extensively from at least the following:
 
 # https://github.com/apache/incubator-mxnet/blob/master/perl-package/AI-MXNet/examples/gluon/mnist.pl
@@ -379,6 +387,7 @@ sub train {
     $self->get_mislabeled( $self->{val_data} );
     $self->net->save_parameters($self->{params});
 
+    return 1;
 }
 
 sub info {
