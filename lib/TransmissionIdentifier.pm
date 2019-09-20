@@ -2,12 +2,7 @@ package TransmissionIdentifier;
 
 use Mouse;
 
-#use Types::Standard qw( Int Str Bool);
-#use Params::ValidationCompiler qw( validation_for );
-
 extends 'TransmissionIdentifierBase';
-
-#use Method::Signatures;
 
 has 'hybridize'   => (is => 'ro', isa => 'Bool', default => 0);
 has 'load_params' => (is => 'ro', isa => 'Bool', default => 0);
@@ -17,22 +12,12 @@ has 'net'         => (is => 'ro',
                       isa => 'AI::MXNet::Gluon::NN::Sequential',
 		      builder => '_net',
                       );
-has 'batch_size'  => (is => 'rw', isa => 'Int', default => 1);
+has 'batch_size'  => (is => 'ro', isa => 'Int', default => 1);
 
-has 'cuda'        => (is => 'rw', isa => 'Bool', default => 0);
-has 'epochs'      => (is => 'rw', isa => 'Int',  default => 20);
-has 'lr'          => (is => 'rw', isa => 'Num',  default => 0.001);
-has 'momentum'    => (is => 'rw', isa => 'Num',  default => 0.9);
-has 'log_intrvl'  => (is => 'rw', isa => 'Int',  default => 100);
-#has 'ctx'         => (is => 'bare', isa => 'Bool', lazy => 1, default => );
-
-#    $self->{cuda}     = exists( $args->{cuda} )     ? $args->{cuda}     : 0;
-#    $self->{epochs}   = exists( $args->{epochs} )   ? $args->{epochs}   : 20;
-#    $self->{lr}       = exists( $args->{lr} )       ? $args->{lr}       : 0.001;
-#    $self->{momentum} = exists( $args->{momentum} ) ? $args->{momentum} : 0.9;
-#    $self->{log_intrvl} =
-#      exists( $args->{log_intrvl} ) ? $args->{log_intrvl} : 100;
-
+has 'epochs'      => (is => 'ro', isa => 'Int',  default => 20);
+has 'lr'          => (is => 'ro', isa => 'Num',  default => 0.001);
+has 'momentum'    => (is => 'ro', isa => 'Num',  default => 0.9);
+has 'log_intrvl'  => (is => 'ro', isa => 'Int',  default => 0);
 
 # code borrows extensively from at least the following:
 
@@ -83,10 +68,7 @@ sub _net {
 
     $net->hybridize() if $self->hybridize;
 
-    #$self->{net} = $net;
-
     if ($self->load_params) {
-	#my $self->{params} = $self->params_dir . 'xmit.params';
         if (-e $self->params) {
 	    $net->load_parameters($self->params);
         } else {
@@ -102,8 +84,6 @@ sub _net {
 	# TODO:  Not a problem if no label file at this point.   It is needed for classification.
         #die sprintf('labels file not found: %s', $self->labels);
     }
-
-    $self->{ctx} = $self->{cuda} ? mx->gpu(0) : mx->cpu;
 
     return $net;
 }
@@ -153,19 +133,6 @@ sub _data_setup {
         print $fh "$_\n";
     }
     close($fh);
-}
-
-sub _collect_args {
-    my ( $self, $args ) = @_;
-
-#    $self->{batch_size} =
-#      exists( $args->{batch_size} ) ? $args->{batch_size} : 1;
-    $self->{cuda}     = exists( $args->{cuda} )     ? $args->{cuda}     : 0;
-    $self->{epochs}   = exists( $args->{epochs} )   ? $args->{epochs}   : 20;
-    $self->{lr}       = exists( $args->{lr} )       ? $args->{lr}       : 0.001;
-    $self->{momentum} = exists( $args->{momentum} ) ? $args->{momentum} : 0.9;
-    $self->{log_intrvl} =
-      exists( $args->{log_intrvl} ) ? $args->{log_intrvl} : 100;
 }
 
 sub write_image {
@@ -293,14 +260,12 @@ sub is_voice {
 sub test {
     my $self = shift;
 
-    my $ctx = $self->{ctx};
-
     my $metric  = mx->metric->Accuracy();
     my $val_set = $self->{val_data};
     while ( defined( my $d = <$val_set> ) ) {
         my ( $data, $label ) = @$d;
-        $data  = $data->as_in_context($ctx);
-        $label = $label->as_in_context($ctx);
+        $data  = $data->as_in_context(mx->cpu);
+        $label = $label->as_in_context(mx->cpu);
         my $output = $self->net->($data);
         $metric->update( [$label], [$output] );
     }
@@ -310,24 +275,20 @@ sub test {
 sub train {
     my ( $self, $args ) = @_;
 
-    $self->_collect_args($args);
-
-    my $ctx = $self->{ctx};
-
     $self->_data_setup;
 
     # Collect all parameters from net and its children, then initialize them.
     $self->net
-      ->initialize( mx->init->Xavier( magnitude => 2.24 ), ctx => $ctx );
+      ->initialize( mx->init->Xavier( magnitude => 2.24 ), ctx => mx->cpu );
 
     # Trainer is for updating parameters with gradient.
     my $trainer = gluon->Trainer( $self->net->collect_params(),
         'sgd',
-        { learning_rate => $self->{lr}, momentum => $self->{momentum} } );
+        { learning_rate => $self->lr, momentum => $self->momentum } );
     my $metric = mx->metric->Accuracy();
     my $loss   = gluon->loss->SoftmaxCrossEntropyLoss();
 
-    for my $epoch ( 0 .. $self->{epochs} - 1 ) {
+    for my $epoch ( 0 .. $self->epochs - 1 ) {
 
         ## set scalars to hold time and mean loss
         my $time = time();
@@ -341,8 +302,8 @@ sub train {
             sub {
                 my ( $i, $d ) = @_;
                 ( $data, $label ) = @$d;
-                $data  = $data->as_in_context($ctx);
-                $label = $label->as_in_context($ctx);
+                $data  = $data->as_in_context(mx->cpu);
+                $label = $label->as_in_context(mx->cpu);
 
                 # Start recording computation graph with record() section.
                 # Recorded graphs can then be differentiated with backward.
@@ -365,8 +326,8 @@ sub train {
                 # update metric at last.
                 $metric->update( [$label], [$output] );
 
-                if (    $self->{log_intrvl} > 0
-                    and $i % $self->{log_intrvl} == 0
+                if (    $self->log_intrvl > 0
+                    and $i % $self->log_intrvl == 0
                     and $i > 0 )
                 {
                     my ( $name, $acc ) = $metric->get();
@@ -392,7 +353,7 @@ sub train {
 
     }
     $self->get_mislabeled( $self->{val_data} );
-    $self->net->save_parameters($self->{params});
+    $self->net->save_parameters($self->params);
 
     return 1;
 }

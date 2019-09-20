@@ -21,8 +21,7 @@ say $transid->net;
 
 $transid->info;
 
-$transid->train( { cuda => 0, lr => 0.001, momentum => 0.9,
-                   epochs => 20, log_intrvl => 0 } );
+$transid->train;
 
 #my $detect = $transid->is_voice(
 #    'training/test/voice/461.080_1533496176.wav.png'
