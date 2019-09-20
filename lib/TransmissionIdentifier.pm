@@ -17,7 +17,14 @@ has 'net'         => (is => 'ro',
                       isa => 'AI::MXNet::Gluon::NN::Sequential',
 		      builder => '_net',
                       );
-has 'batch_size'  =>  (is => 'rw', isa => 'Int', default => 1);
+has 'batch_size'  => (is => 'rw', isa => 'Int', default => 1);
+
+has 'cuda'        => (is => 'rw', isa => 'Bool', default => 0);
+has 'epochs'      => (is => 'rw', isa => 'Int',  default => 20);
+has 'lr'          => (is => 'rw', isa => 'Num',  default => 0.001);
+has 'momentum'    => (is => 'rw', isa => 'Num',  default => 0.9);
+has 'log_intrvl'  => (is => 'rw', isa => 'Int',  default => 100);
+#has 'ctx'         => (is => 'bare', isa => 'Bool', lazy => 1, default => );
 
 #    $self->{cuda}     = exists( $args->{cuda} )     ? $args->{cuda}     : 0;
 #    $self->{epochs}   = exists( $args->{epochs} )   ? $args->{epochs}   : 20;

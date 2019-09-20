@@ -15,13 +15,25 @@ dies_ok { my $classify = TransmissionIdentifier->new( { load_params => 1, params
          'params file does not exist';
 
 lives_ok { my $classify = TransmissionIdentifier->new( { labels => '/tmp/foo' } ) }
-         'label file does not exist';
+         'label file does not exist but ignore it';
 
 my $classify = TransmissionIdentifier->new();
 
 ok( defined($classify) && ref $classify eq 'TransmissionIdentifier',     'new() works' );
 
+is($classify->hybridize, 0, 'default hybridize');
+is($classify->load_params, 0, 'default load_params');
+is($classify->params, 'xmit.params', 'default params file');
+is($classify->labels, 'labels.txt', 'default label file');
+is($classify->labels, 'labels.txt', 'default label file');
 like( $classify->net, qr/\Q(7): Dense(2 -> 0, linear)\E/, 'returns network');
+is($classify->batch_size, 1, 'default batch_size');
+is($classify->cuda, 0, 'default cuda');
+is($classify->epochs, 20, 'default epochs');
+is($classify->lr, 0.001, 'default lr');
+is($classify->momentum, 0.9, 'default momentum');
+is($classify->log_intrvl, 100, 'default log_intrvl');
+#is($classify->ctx, 100, 'default log_intrvl');
 
 my $info;
 lives_ok{ $info = $classify->info } 'got the info';
