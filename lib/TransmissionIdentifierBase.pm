@@ -32,7 +32,7 @@ sub audio_to_spectrogram {
 	my $err = "system @args failed: $?";
 	die $err;
     }
-    return;
+    return $params{output};
 }
 
 1;

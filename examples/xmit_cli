@@ -6,6 +6,9 @@
 use warnings;
 use strict;
 
+use Pod::Usage;
+use Getopt::Long qw(HelpMessage);
+
 use feature 'say';
 
 use FindBin;
@@ -15,25 +18,49 @@ use TransmissionIdentifier;
 
 use Data::Dumper;
 
-my $transid = TransmissionIdentifier->new( { hybridize => 0, load_params => 1, batch_size => 1 } );
-
-say $transid->net;
-
-$transid->info;
-
-#$transid->train;
-
-my $detect = $transid->is_voice(
-    input => 'training/test/voice/461.080_1533496176.wav.png'
+GetOptions(
+    'train'          => \( my $train        = 0 ),
+    'info'           => \( my $info         = 0 ),
+    'classify'       => \( my $classify     = 0 ),
+    'lr=f'           => \( my $lr           = 0.001 ),
+    'log-interval=i' => \( my $log_interval = 20 ),
+    'momentum=f'     => \( my $momentum     = 0.9 ),
+    'hybridize=i'    => \( my $hybridize    = 0 ),
+    'cuda=i'         => \( my $cuda         = 0 ),
+    'load_params=i'  => \( my $load_params  = 0 ),
+    'batch-size=i'   => \( my $batch_size   = 1 ),
+    'epochs=i'       => \( my $epochs       = 20 ),
     );
-say sprintf('is this voice file a voice?: %d', $detect);
 
-my $detect = $transid->is_voice(
-    input =>  'training/test/data/461.205_1533495707.wav.png'
-    );
-say sprintf('is this data file a voice?: %d', $detect);
+my $transid;
 
-my $detect = $transid->is_voice(
-    input =>  'samples/voice1.wav'
+if ($train) {
+    $transid = TransmissionIdentifier->new( { hybridize => 0, load_params => 0, batch_size => 1 } );
+    $transid->train;
+}
+
+if ($info) {
+    $transid = TransmissionIdentifier->new( { hybridize => 0, load_params => 0, batch_size => 1 } );
+    say $transid->net;
+    $transid->info;
+}
+
+if ($classify) {
+    $transid = TransmissionIdentifier->new( { hybridize => 0, load_params => 1, batch_size => 1 } );
+
+    my $detect = $transid->is_voice(
+        input => 'training/test/voice/461.080_1533496176.wav.png'
     );
-say sprintf('is this voice file a voice?: %d', $detect);
+    say sprintf('is this voice file a voice?: %d', $detect);
+
+    $detect = $transid->is_voice(
+        input =>  'training/test/data/461.205_1533495707.wav.png'
+    );
+    say sprintf('is this data file a voice?: %d', $detect);
+
+    $detect = $transid->is_voice(
+        input =>  'samples/voice1.wav'
+    );
+    say sprintf('is this voice file a voice?: %d', $detect);
+}
+
