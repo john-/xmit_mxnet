@@ -1,3 +1,5 @@
+requires 'Mouse';
+requires 'MouseX::Params::Validate';
 requires 'Test::Files';
 requires 'Test::Exception';
 requires 'Method::Signatures';

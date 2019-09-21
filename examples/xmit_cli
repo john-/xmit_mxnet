@@ -15,17 +15,25 @@ use TransmissionIdentifier;
 
 use Data::Dumper;
 
-my $transid = TransmissionIdentifier->new( { hybridize => 0, load_params => 0, batch_size => 1 } );
+my $transid = TransmissionIdentifier->new( { hybridize => 0, load_params => 1, batch_size => 1 } );
 
 say $transid->net;
 
 $transid->info;
 
-$transid->train;
+#$transid->train;
 
-#my $detect = $transid->is_voice(
-#    'training/test/voice/461.080_1533496176.wav.png'
-#    # 'training/test/data/461.205_1533495707.wav.png'
-#    );
-#say sprintf('is voice?: %d', $detect);
+my $detect = $transid->is_voice(
+    input => 'training/test/voice/461.080_1533496176.wav.png'
+    );
+say sprintf('is this voice file a voice?: %d', $detect);
 
+my $detect = $transid->is_voice(
+    input =>  'training/test/data/461.205_1533495707.wav.png'
+    );
+say sprintf('is this data file a voice?: %d', $detect);
+
+my $detect = $transid->is_voice(
+    input =>  'samples/voice1.wav'
+    );
+say sprintf('is this voice file a voice?: %d', $detect);

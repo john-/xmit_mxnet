@@ -1,6 +1,7 @@
 package TransmissionIdentifier;
 
 use Mouse;
+use MouseX::Params::Validate;
 
 extends 'TransmissionIdentifierBase';
 
@@ -210,15 +211,24 @@ sub get_mislabeled {
 }
 
 sub is_voice {
-    my ( $self, $file ) = @_;
+    my ($self, %params) = validated_hash(
+	\@_,
+	input =>    {isa => 'Str'},
+	duration => {isa => 'Num', optional => 1},
+    );
 
     die 'need to load params if going to classify' if !$self->load_params;
 
-    if ($file =~ m/\.wav$/) {
-        my $wav = $file;
+    my $file = $params{input};
+
+    if ($params{input} =~ m/\.wav$/) {
         $file = '/tmp/classify.png';
-	$self->audio_to_spectrogram( input  => $wav,
-				     output => $file );
+        $params{output} = $file;
+	$self->audio_to_spectrogram( %params
+                                    # input  => $wav,
+				    # output => $file,
+	                            # duration => $params{duration} if $params{duration}
+                                    );
     }
 
     my $image = mx->image->imread($file);
