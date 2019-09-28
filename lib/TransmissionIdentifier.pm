@@ -5,6 +5,8 @@ use MouseX::Params::Validate;
 
 extends 'TransmissionIdentifierBase';
 
+use File::Temp qw/ unlink0 /;
+
 has 'hybridize'   => (is => 'ro', isa => 'Bool', default => 0);
 has 'load_params' => (is => 'ro', isa => 'Bool', default => 0);
 has 'params'      => (is => 'ro', isa => 'Str',  default => 'xmit.params');
@@ -219,19 +221,24 @@ sub is_voice {
 
     die 'need to load params if going to classify' if !$self->load_params;
 
-    my $file = $params{input};
+    #my $file = $params{input};
+
+    my $image;
 
     if ($params{input} =~ m/\.wav$/) {
-        $file = '/tmp/classify.png';
-        $params{output} = $file;
+	my $fh = File::Temp->new( SUFFIX => '.png', UNLINK => 0 );
+        #$file = '/tmp/classify.png';
+        $params{output} = $fh->filename;
 	$self->audio_to_spectrogram( %params
                                     # input  => $wav,
 				    # output => $file,
 	                            # duration => $params{duration} if $params{duration}
                                     );
+        $image = mx->image->imread($params{output});
+	unlink0($fh, $fh->filename);
+    } else {
+        $image = mx->image->imread($params{input});
     }
-
-    my $image = mx->image->imread($file);
 
     # put channel first
     $image = $image->transpose( [ 2, 0, 1 ] )->expand_dims( axis => 0 );
