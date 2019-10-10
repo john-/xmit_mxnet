@@ -212,7 +212,7 @@ sub get_mislabeled {
     }
 }
 
-sub is_voice {
+sub classify {
     my ($self, %params) = validated_hash(
 	\@_,
 	input =>    {isa => 'Str'},
@@ -248,30 +248,25 @@ sub is_voice {
 
     my $prob = $self->net->($image)->softmax;
 
-    my $idxs = $prob->topk( k => 0 )->at(0);
-    my $top_idx = $idxs->[0]->asscalar;
-    my $top_prob = $prob->at(0)->at($top_idx)->asscalar;
-    my $top_label = $self->{text_labels}->[$top_idx];
-
-    #my %classifications;
-    #for my $idx ( @{ $prob->topk( k => 0 )->at(0) } ) {
-    #    my $i = $idx->asscalar;
-	#$classifications{ $self->{text_labels}->[$i] } =
-	 #   $prob->at(0)->at($i)->asscalar;
-
-     #   printf(
-     #       "With prob = %.5f, it contains %s\n",
-     #       $prob->at(0)->at($i)->asscalar,
-     #       $self->{text_labels}->[$i]
-     #   );
+    #say $prob->at(0)->at(1)->asscalar;
+    #foreach my $val ($prob->at(0)) {
+    #    say "val: " . $val->at(0)->asscalar;
     #}
-    #return \%classifications;
-    if (($top_label eq 'voice') and
-	($top_prob  >= 0.5)) {
-	    return 1;
-    } else {
-	return 0;
+    my $len = $prob->at(0)->size;
+    my %result;
+    for (my $i=0; $i < $len; $i++) {
+	$result{$self->{text_labels}->[$i]} = $prob->at(0)->at($i)->asscalar;
     }
+
+    return \%result;
+}
+
+sub is_voice {
+    my ($self, %params) = @_;
+
+    my $result = $self->classify(%params);
+
+    return $result->{voice} >= 0.5 ? 1 : 0;
 }
 
 sub test {

@@ -48,7 +48,12 @@ if ($info) {
 if ($classify) {
     $transid = TransmissionIdentifier->new( { hybridize => 0, load_params => 1, batch_size => 1 } );
 
-    my $detect = $transid->is_voice(
+    my $detect = $transid->classify(
+        input => 'samples/voice1.wav'
+    );
+    say sprintf('voice file classification: %s', Dumper($detect));
+
+    $detect = $transid->is_voice(
         input => 'training/test/voice/461.080_1533496176.wav.png'
     );
     say sprintf('is this voice file a voice?: %d', $detect);
