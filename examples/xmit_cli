@@ -35,7 +35,10 @@ GetOptions(
 my $transid;
 
 if ($train) {
-    $transid = TransmissionIdentifier->new( { hybridize => 0, load_params => 0, batch_size => 1 } );
+    $transid = TransmissionIdentifier->new( { hybridize => $hybridize,
+                                              load_params => $load_params,
+                                              batch_size => $batch_size,
+                                              epochs => $epochs } );
     $transid->train;
 }
 

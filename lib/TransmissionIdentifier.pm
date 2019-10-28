@@ -7,6 +7,10 @@ extends 'TransmissionIdentifierBase';
 
 use File::Temp qw/ unlink0 /;
 
+use AI::ConfusionMatrix;
+
+use Data::Dumper;
+
 has 'hybridize'   => (is => 'ro', isa => 'Bool', default => 0);
 has 'load_params' => (is => 'ro', isa => 'Bool', default => 0);
 has 'params'      => (is => 'ro', isa => 'Str',  default => 'xmit.params');
@@ -65,7 +69,7 @@ sub _net {
             $net->add( nn->Flatten() );
             $net->add( nn->Dense( 120, activation => "relu" ) );
             $net->add( nn->Dense( 84,  activation => "relu" ) );
-            $net->add( nn->Dense(2) );
+            $net->add( nn->Dense(3) );
         }
     );
 
@@ -176,6 +180,8 @@ sub get_mislabeled {
 
     mkdir "mislabeled";
 
+    my %confusion;
+
     my @tendl = @$loader;
 
     my $topline;
@@ -209,7 +215,11 @@ sub get_mislabeled {
 
         print $otline . "\n";
 
+	$confusion{$true}{$pred} += 1;
     }
+
+    say Dumper(\%confusion);
+    makeConfusionMatrix(\%confusion, 'confusion.csv');
 }
 
 sub classify {
