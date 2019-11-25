@@ -218,8 +218,11 @@ sub get_mislabeled {
 	$confusion{$true}{$pred} += 1;
     }
 
-    say Dumper(\%confusion);
     makeConfusionMatrix(\%confusion, 'confusion.csv');
+
+    #system('cat confusion.csv | sed \'s/,/ ,/g\' | column -t -s,');
+    system('column -t -s, -n confusion.csv | less -F -S -X -K');
+
 }
 
 sub classify {
