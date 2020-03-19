@@ -26,7 +26,7 @@ is($classify->load_params, 0, 'default load_params');
 is($classify->params, 'xmit.params', 'default params file');
 is($classify->labels, 'labels.txt', 'default label file');
 is($classify->labels, 'labels.txt', 'default label file');
-like( $classify->net, qr/\Q(7): Dense(2 -> 0, linear)\E/, 'returns network');
+like( $classify->net, qr/\Q(7): Dense(3 -> 0, linear)\E/, 'returns network');
 is($classify->batch_size, 1, 'default batch_size');
 is($classify->epochs, 20, 'default epochs');
 is($classify->lr, 0.001, 'default lr');

@@ -2,11 +2,12 @@
 MYMETA.json
 MYMETA.yml
 Makefile
-labels.txt
+labels.txt*
 training/
-xmit.params
+xmit.params*
 blib/
 pm_to_blib
 _Inline/
 mislabeled/
 image_dump/
+confusion.csv
