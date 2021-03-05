@@ -1,6 +1,6 @@
 # backup training/model in preperation for another execution
 
-tar cvf `date +training_%Y%m%d`.tar.gz training
-cp xmit.params `date +xmit.params_%Y%m%d`
-
+tar cvf bak/`date +training_%Y%m%d`.tar.gz training
+cp xmit.params bak/`date +xmit.params_%Y%m%d`
+cp confusion.csv bak/`date +confusion.csv_%Y%m%d`
 

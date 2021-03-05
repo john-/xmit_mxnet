@@ -3,8 +3,9 @@ MYMETA.json
 MYMETA.yml
 Makefile
 labels.txt*
-training*
-xmit.params*
+training/
+xmit.params
+bak/
 blib/
 pm_to_blib
 _Inline/
