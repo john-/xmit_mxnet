@@ -57,12 +57,12 @@ if ($classify) {
     say sprintf('voice file classification: %s', Dumper($detect));
 
     $detect = $transid->is_voice(
-        input => 'training/test/voice/461.080_1533496176.wav.png'
+        input => 'training/test/voice/461.775_1564688538.wav.png'
     );
     say sprintf('is this voice file a voice?: %d', $detect);
 
     $detect = $transid->is_voice(
-        input =>  'training/test/data/461.205_1533495707.wav.png'
+        input =>  'training/test/data/464.325_1564693492.wav.png'
     );
     say sprintf('is this data file a voice?: %d', $detect);
 
