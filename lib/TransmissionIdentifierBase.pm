@@ -25,6 +25,8 @@ sub audio_to_spectrogram {
     }
 
     my $start = $params{duration}/2-0.5;
+    #my $start = sprintf('%.3f',$params{duration}/2-0.5);
+    #print "start: $start";
     my @args = ( '/usr/bin/ffmpeg',  '-loglevel', 'error', '-y', '-ss', $start, '-t', 1.0,
                   '-i', $params{input},
                   '-lavfi',  'showspectrumpic=s=100x50:scale=log:legend=off',  $params{output});

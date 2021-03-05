@@ -7,4 +7,7 @@ script/xmit_mxnet
 LICENSE
 MANIFEST			This list of files
 t/00basics.t
-t/10classify.t
+t/10no_model.t
+t/20train.t
+t/30classify.t
+
