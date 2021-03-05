@@ -1,0 +1,70 @@
+With training4 data:
+
+./examples/xmit_cli --info
+Sequential(
+  (0): Conv2D(6, kernel_size=(5,5), stride=(1,1))
+  (1): MaxPool2D(size=(2,2), stride=(2,2), padding=(0,0), ceil_mode=0)
+  (2): Conv2D(16, kernel_size=(3,3), stride=(1,1))
+  (3): MaxPool2D(size=(2,2), stride=(2,2), padding=(0,0), ceil_mode=0)
+  (4): Flatten
+  (5): Dense(120 -> 0, Activation(relu))
+  (6): Dense(84 -> 0, Activation(relu))
+  (7): Dense(3 -> 0, linear)
+)
+data type: float32 label type: int32
+$VAR1 = [
+          3,
+          50,
+          100
+        ];
+
+sample image name: ./training/train/data/460.010_1564945770.wav.png, label: [0]
+batch size: 1
+labels:
+ label: data
+ label: skip
+ label: voice
+total training data: 1484
+total validation data: 370
+
+
+       data  skip  voice  TOTAL  TP   FP  FN  SENS    ACC
+       data   92    2            94     92   15  2   85.98%  97.87%
+       skip   14    116   15     145    116  58  29  66.67%  80.00%
+       voice  1     56    74     131    74   15  57  83.15%  56.49%
+       TOTAL  107   174   89     370    282  88  88  76.22%  76.22%
+
+training5:
+
+./examples/xmit_cli --info
+Sequential(
+  (0): Conv2D(6, kernel_size=(5,5), stride=(1,1))
+  (1): MaxPool2D(size=(2,2), stride=(2,2), padding=(0,0), ceil_mode=0)
+  (2): Conv2D(16, kernel_size=(3,3), stride=(1,1))
+  (3): MaxPool2D(size=(2,2), stride=(2,2), padding=(0,0), ceil_mode=0)
+  (4): Flatten
+  (5): Dense(120 -> 0, Activation(relu))
+  (6): Dense(84 -> 0, Activation(relu))
+  (7): Dense(3 -> 0, linear)
+)
+data type: float32 label type: int32
+$VAR1 = [
+          3,
+          50,
+          100
+        ];
+
+sample image name: ./training/train/data/460.010_1564945770.wav.png, label: [0]
+batch size: 1
+labels:
+ label: data
+ label: skip
+ label: voice
+total training data: 2276
+total validation data: 568
+
+       data  skip  voice  TOTAL  TP   FP   FN   SENS    ACC
+data   100   3     1      104    100  16   4    86.21%  96.15%
+skip   16    124   67     207    124  37   83   77.02%  59.90%
+voice        34    223    257    223  68   34   76.63%  86.77%
+TOTAL  116   161   291    568    447  121  121  78.70%  78.70%
