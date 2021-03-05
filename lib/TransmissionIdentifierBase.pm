@@ -24,9 +24,8 @@ sub audio_to_spectrogram {
 	$read->{handle}->close;    # http://www.perlmonks.org/bare/?node_id=946696
     }
 
-    my $start = $params{duration}/2-0.5;
-    #my $start = sprintf('%.3f',$params{duration}/2-0.5);
-    #print "start: $start";
+    my $start = sprintf('%.3f', $params{duration}/2-0.5);
+
     my @args = ( '/usr/bin/ffmpeg',  '-loglevel', 'error', '-y', '-ss', $start, '-t', 1.0,
                   '-i', $params{input},
                   '-lavfi',  'showspectrumpic=s=100x50:scale=log:legend=off',  $params{output});

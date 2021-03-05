@@ -3,7 +3,7 @@ MYMETA.json
 MYMETA.yml
 Makefile
 labels.txt*
-training/
+training
 xmit.params
 bak/
 blib/
