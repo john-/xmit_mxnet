@@ -170,8 +170,11 @@ sub dump_all_images {
         my $data = ${ $set[$i] }[0];
 
         #my $label = ${ $set[$i] }[1];
+        my $hashish = int( $data->aspdl->sum );
+        $self->write_image( $data,
+            sprintf( "image_dump/%s-%d.png", $hashish, $i ) );
 
-        $self->write_image( $data, "image_dump/$i.png" );
+        #$self->write_image( $data, "image_dump/$i.png" );
     }
 }
 
@@ -210,7 +213,7 @@ sub get_mislabeled {
             $otline .= "XX";
             my $hashish = int( $data->aspdl->sum );
             $self->write_image( $data,
-                sprintf( "mislabeled/%s-%s.png", $hashish, $true ) );
+                sprintf( "mislabeled/%s-is_%s-pred_%s.png", $hashish, $true, $pred ) );
         }
 
         print $otline . "\n";
@@ -304,7 +307,8 @@ sub train {
 
     # Collect all parameters from net and its children, then initialize them.
     $self->net
-      ->initialize( mx->init->Xavier( magnitude => 2.24 ), ctx => mx->cpu );
+      ->initialize( mx->init->Xavier(), ctx => mx->cpu );
+      #->initialize( mx->init->Xavier( magnitude => 2.24 ), ctx => mx->cpu );
 
     # Trainer is for updating parameters with gradient.
     my $trainer = gluon->Trainer( $self->net->collect_params(),

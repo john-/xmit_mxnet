@@ -68,3 +68,38 @@ data   100   3     1      104    100  16   4    86.21%  96.15%
 skip   16    124   67     207    124  37   83   77.02%  59.90%
 voice        34    223    257    223  68   34   76.63%  86.77%
 TOTAL  116   161   291    568    447  121  121  78.70%  78.70%
+
+training6:
+
+./examples/xmit_cli --info
+Sequential(
+  (0): Conv2D(6, kernel_size=(5,5), stride=(1,1))
+  (1): MaxPool2D(size=(2,2), stride=(2,2), padding=(0,0), ceil_mode=0)
+  (2): Conv2D(16, kernel_size=(3,3), stride=(1,1))
+  (3): MaxPool2D(size=(2,2), stride=(2,2), padding=(0,0), ceil_mode=0)
+  (4): Flatten
+  (5): Dense(120 -> 0, Activation(relu))
+  (6): Dense(84 -> 0, Activation(relu))
+  (7): Dense(3 -> 0, linear)
+)
+data type: float32 label type: int32
+$VAR1 = [
+          3,
+          50,
+          100
+        ];
+
+sample image name: ./training/train/data/460.010_1564945770.wav.png, label: [0]
+batch size: 1
+labels:
+ label: data
+ label: skip
+ label: voice
+total training data: 3362
+total validation data: 840
+
+       data  skip  voice  TOTAL  TP   FP   FN   SENS    ACC
+data   110   13    2      125    110  8    15   93.22%  88.00%
+skip   7     201   83     291    201  117  90   63.21%  69.07%
+voice  1     104   319    424    319  85   105  78.96%  75.24%
+TOTAL  118   318   404    840    630  210  210  75.00%  75.00%
