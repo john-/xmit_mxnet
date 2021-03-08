@@ -52,12 +52,13 @@ sub _net {
         sub {
             $net->add(
                 nn->Conv2D(
-                    channels    => 6,
-                    kernel_size => 5,
+                    channels    => 8,
+                    kernel_size => 3,
                     activation  => 'relu'
                 )
             );
             $net->add( nn->MaxPool2D( pool_size => 2, strides => 2 ) );
+            #$net->add( nn->Dropout( 0.25 ) );   # TODO:  Remove Dropout from deployment?
             $net->add(
                 nn->Conv2D(
                     channels    => 16,
@@ -66,6 +67,7 @@ sub _net {
                 )
             );
             $net->add( nn->MaxPool2D( pool_size => 2, strides => 2 ) );
+            #$net->add( nn->Dropout( 0.25 ) );   # TODO:  Remove Dropout from deployment?
             $net->add( nn->Flatten() );
             $net->add( nn->Dense( 120, activation => "relu" ) );
             $net->add( nn->Dense( 84,  activation => "relu" ) );
@@ -210,7 +212,7 @@ sub get_mislabeled {
             $otline .= "..";
         }
         else {
-            $otline .= "XX";
+            $otline .= $self->{val_dataset}->items->[$i][0];
             my $hashish = int( $data->aspdl->sum );
             $self->write_image( $data,
                 sprintf( "mislabeled/%s-is_%s-pred_%s.png", $hashish, $true, $pred ) );
@@ -222,6 +224,15 @@ sub get_mislabeled {
     }
 
     makeConfusionMatrix(\%confusion, 'confusion.csv');
+
+#    foreach my $data ( @{$self->{val_dataset}->items} ) {
+#        say sprintf(
+#            'test image name: %s, label: %s',
+#            $data->[0],
+#            $data->[1]
+#        );
+#    }
+
 
     #system('cat confusion.csv | sed \'s/,/ ,/g\' | column -t -s,');
     system('column -t -s, -n confusion.csv | less -F -S -X -K');
