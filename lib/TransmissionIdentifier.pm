@@ -58,7 +58,7 @@ sub _net {
                 )
             );
             $net->add( nn->MaxPool2D( pool_size => 2, strides => 2 ) );
-            #$net->add( nn->Dropout( 0.25 ) );   # TODO:  Remove Dropout from deployment?
+            $net->add( nn->Dropout( 0.25 ) );
             $net->add(
                 nn->Conv2D(
                     channels    => 16,
@@ -67,7 +67,7 @@ sub _net {
                 )
             );
             $net->add( nn->MaxPool2D( pool_size => 2, strides => 2 ) );
-            #$net->add( nn->Dropout( 0.25 ) );   # TODO:  Remove Dropout from deployment?
+            $net->add( nn->Dropout( 0.25 ) );
             $net->add( nn->Flatten() );
             $net->add( nn->Dense( 120, activation => "relu" ) );
             $net->add( nn->Dense( 84,  activation => "relu" ) );
